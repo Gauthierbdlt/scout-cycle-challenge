@@ -1,0 +1,246 @@
+import { useEffect, useState } from "react";
+import { Clock, Edit3 } from "lucide-react";
+import { db, type CountdownConfig } from "@/lib/database";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+
+interface TimeRemaining {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  isOver: boolean;
+}
+
+function calculateTimeRemaining(targetIso: string): TimeRemaining {
+  if (!targetIso) {
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, isOver: true };
+  }
+  const targetTime = new Date(targetIso).getTime();
+  if (Number.isNaN(targetTime)) {
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, isOver: true };
+  }
+  const diff = targetTime - Date.now();
+  if (diff <= 0) {
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, isOver: true };
+  }
+  return {
+    days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+    minutes: Math.floor((diff / (1000 * 60)) % 60),
+    seconds: Math.floor((diff / 1000) % 60),
+    isOver: false,
+  };
+}
+
+export function CountdownBanner({ isAdmin }: { isAdmin: boolean }) {
+  const [config, setConfig] = useState<CountdownConfig>(() => db.getCountdown());
+  const [time, setTime] = useState<TimeRemaining>(() =>
+    calculateTimeRemaining(config?.target_date || ""),
+  );
+  const [editOpen, setEditOpen] = useState(false);
+  const [formTitle, setFormTitle] = useState(config.title);
+  const [formSubtitle, setFormSubtitle] = useState(config.subtitle || "");
+  const [formDate, setFormDate] = useState(
+    config.target_date ? config.target_date.slice(0, 16) : "2026-11-15T18:00",
+  );
+  const [formActive, setFormActive] = useState(config.is_active);
+
+  useEffect(() => {
+    const unsub = db.subscribe(() => {
+      const c = db.getCountdown();
+      setConfig(c);
+      setTime(calculateTimeRemaining(c.target_date));
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(calculateTimeRemaining(config.target_date));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [config.target_date]);
+
+  if (!config.is_active) {
+    return null;
+  }
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    db.updateCountdown({
+      title: formTitle.trim() || "Compte à rebours du Défi",
+      subtitle: formSubtitle.trim(),
+      target_date: new Date(formDate).toISOString(),
+      is_active: formActive,
+    });
+    setEditOpen(false);
+    toast.success("Compte à rebours mis à jour !");
+  };
+
+  const openEditor = () => {
+    setFormTitle(config.title);
+    setFormSubtitle(config.subtitle || "");
+    setFormDate(config.target_date ? config.target_date.slice(0, 16) : "2026-11-15T18:00");
+    setFormActive(config.is_active);
+    setEditOpen(true);
+  };
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-orange-500/20 bg-[#241a12] p-5 sm:p-6 text-white shadow-xl">
+      {/* Decorative ambient glows */}
+      <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-orange-500/15 blur-3xl" />
+      <div className="pointer-events-none absolute -left-16 -bottom-16 h-48 w-48 rounded-full bg-amber-500/10 blur-3xl" />
+
+      <div className="relative z-10 flex flex-col items-center justify-between gap-5 lg:flex-row">
+        {/* Left header */}
+        <div className="text-center lg:text-left min-w-0 flex-1">
+          <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/20 border border-orange-500/30 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-300 backdrop-blur-sm">
+            <Clock className="h-3.5 w-3.5 animate-pulse text-amber-300" />
+            <span>Compte à Rebours Officiel</span>
+          </div>
+          <h2 className="mt-2 text-xl font-black tracking-tight text-white sm:text-2xl lg:text-3xl">
+            {config.title}
+          </h2>
+          {config.subtitle && (
+            <p className="mt-1 max-w-xl text-xs sm:text-sm text-white/70">{config.subtitle}</p>
+          )}
+        </div>
+
+        {/* Right Tiles — STRICTLY SINGLE LINE (flex-nowrap) */}
+        <div className="flex flex-col items-center lg:items-end gap-3 shrink-0">
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2.5 flex-nowrap">
+            <TimeCard value={time.days} label="Jours" />
+            <span className="font-display text-lg sm:text-2xl font-bold text-orange-400 select-none shrink-0">
+              :
+            </span>
+            <TimeCard value={time.hours} label="Heures" />
+            <span className="font-display text-lg sm:text-2xl font-bold text-orange-400 select-none shrink-0">
+              :
+            </span>
+            <TimeCard value={time.minutes} label="Minutes" />
+            <span className="font-display text-lg sm:text-2xl font-bold text-orange-400 select-none shrink-0">
+              :
+            </span>
+            <TimeCard value={time.seconds} label="Secondes" highlight />
+          </div>
+
+          {/* Admin edit button */}
+          {isAdmin && (
+            <button
+              onClick={openEditor}
+              title="Configurer le compte à rebours"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white/90 backdrop-blur transition hover:border-orange-500 hover:bg-black/60 hover:text-white"
+            >
+              <Edit3 className="h-3.5 w-3.5 text-amber-400" />
+              <span>Modifier l'échéance</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Admin Edit Modal */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-orange-500" />
+              Modifier le Grand Compte à Rebours
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSave} className="space-y-4 py-2">
+            <div>
+              <Label htmlFor="countdown-title">Nom de l'événement</Label>
+              <Input
+                id="countdown-title"
+                value={formTitle}
+                onChange={(e) => setFormTitle(e.target.value)}
+                placeholder="Ex: Fin du Défi Vélo 2026"
+                required
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="countdown-sub">Sous-titre / Détails (optionnel)</Label>
+              <Input
+                id="countdown-sub"
+                value={formSubtitle}
+                onChange={(e) => setFormSubtitle(e.target.value)}
+                placeholder="Ex: Rassemblement de troupe et remise du Grand Trophée"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="countdown-date">Date et heure de fin</Label>
+              <Input
+                id="countdown-date"
+                type="datetime-local"
+                value={formDate}
+                onChange={(e) => setFormDate(e.target.value)}
+                required
+                className="mt-1"
+              />
+            </div>
+            <div className="flex items-center gap-2 pt-2">
+              <input
+                type="checkbox"
+                id="countdown-active"
+                checked={formActive}
+                onChange={(e) => setFormActive(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+              />
+              <Label htmlFor="countdown-active" className="cursor-pointer text-sm font-normal">
+                Activer et afficher le compte à rebours
+              </Label>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
+                Annuler
+              </Button>
+              <Button type="submit" className="bg-orange-600 hover:bg-orange-500 text-white">
+                Enregistrer
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function TimeCard({
+  value,
+  label,
+  highlight = false,
+}: {
+  value: number;
+  label: string;
+  highlight?: boolean;
+}) {
+  const safeVal = Number.isFinite(value) ? Math.max(0, value) : 0;
+  return (
+    <div
+      className={`flex flex-col items-center justify-center rounded-xl border py-2 px-1.5 text-center backdrop-blur-md transition min-w-[56px] w-14 sm:min-w-[70px] sm:w-[72px] md:min-w-[76px] md:w-20 shrink-0 ${
+        highlight
+          ? "border-orange-500/60 bg-gradient-to-b from-orange-600/30 to-orange-700/40 text-white shadow-lg"
+          : "border-white/15 bg-black/50 text-white"
+      }`}
+    >
+      <span className="font-display text-xl sm:text-2xl md:text-3xl font-black tracking-tight leading-none text-white">
+        {String(safeVal).padStart(2, "0")}
+      </span>
+      <span className="mt-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-white/70 leading-none">
+        {label}
+      </span>
+    </div>
+  );
+}
