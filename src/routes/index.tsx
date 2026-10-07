@@ -32,6 +32,8 @@ import { weekRange, useAuth } from "@/lib/useAuth";
 import { db, type Patrol, getActivitySport, type ActivitySport, getPatrolEmblem } from "@/lib/database";
 import { cn } from "@/lib/utils";
 import { isStaffPatrol, matchesCategory } from "@/lib/categories";
+import { computeJerseys } from "@/lib/jerseys";
+import { JerseysPanel } from "@/components/JerseysPanel";
 
 interface LeaderboardItem {
   user_id: string;
@@ -43,6 +45,7 @@ interface LeaderboardItem {
   patrol_name: string;
   category: string;
   km: number;
+  dplus: number;
   scout_year?: number | null;
   is_chef?: boolean;
 }
@@ -132,7 +135,7 @@ function Index() {
 
         const { data: realActs } = await supabase
           .from("activities")
-          .select("user_id, km, ride_date, status, note");
+          .select("user_id, km, elevation_m, ride_date, status, note");
 
         type ProfileWithPatrol = {
           id: string;
@@ -147,6 +150,7 @@ function Index() {
         type ActItem = {
           user_id: string;
           km: number;
+          elevation_m?: number | null;
           ride_date: string;
           status: string;
           note?: string | null;
@@ -188,6 +192,10 @@ function Index() {
             });
 
             const totalKm = userActs.reduce((acc, curr) => acc + Number(curr.km || 0), 0);
+            const totalDplus = userActs.reduce(
+              (acc, curr) => acc + Number(curr.elevation_m || 0),
+              0,
+            );
             const displayName = p.totem
               ? `${p.totem}${p.quali ? ` ${p.quali}` : ""}`
               : p.full_name || "Scout";
@@ -202,6 +210,7 @@ function Index() {
               patrol_name: pt?.name || (isStaffOrChef ? "Staff" : "Sans patrouille"),
               category: isStaffOrChef ? "staff" : (pt?.category as "homme" | "femme") || "homme",
               km: Number(totalKm.toFixed(1)),
+              dplus: Math.round(totalDplus),
               scout_year: p.scout_year ?? undefined,
               is_chef: isStaffOrChef,
             };
@@ -342,6 +351,21 @@ function Index() {
       };
     });
   }, [patrolRows]);
+
+  // Maillots : calculés sur tous les participants (indépendamment des filtres genre/année)
+  const jerseys = useMemo(
+    () => computeJerseys(Array.isArray(leaderboardData) ? leaderboardData : []),
+    [leaderboardData],
+  );
+  const jerseyHolderIds = useMemo(() => {
+    const yellow = new Set<string>();
+    const climber = new Set<string>();
+    for (const h of Object.values(jerseys)) {
+      if (h.yellow) yellow.add(h.yellow.user_id);
+      if (h.climber) climber.add(h.climber.user_id);
+    }
+    return { yellow, climber };
+  }, [jerseys]);
 
   const rankedScouts = useMemo(() => {
     let r = 1;
@@ -745,6 +769,18 @@ function Index() {
           </div>
         </div>
 
+        {/* Maillots : jaune (km) et à pois (D+) par catégorie, selon la période et le sport */}
+        <JerseysPanel
+          jerseys={jerseys}
+          periodLabel={
+            period === "week"
+              ? "Cette semaine"
+              : period === "last"
+                ? "Semaine passée"
+                : "Depuis le début"
+          }
+        />
+
         {/* View Switcher: Patrouilles vs Individuel vs Tendances Graphique */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-2 gap-3">
           <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto">
@@ -983,6 +1019,9 @@ function Index() {
                     scoutYear={s.scout_year ?? null}
                     isChef={s.is_chef}
                     km={s.km}
+                    dplus={s.dplus}
+                    yellowJersey={jerseyHolderIds.yellow.has(s.user_id)}
+                    climberJersey={jerseyHolderIds.climber.has(s.user_id)}
                     maxKm={rankedScouts[0]?.km || 1}
                     sportMode={sportMode}
                   />
@@ -1124,6 +1163,9 @@ function ScoutLeaderboardRow({
   scoutYear,
   isChef,
   km,
+  dplus = 0,
+  yellowJersey = false,
+  climberJersey = false,
   maxKm,
   sportMode = "velo",
 }: {
@@ -1133,6 +1175,9 @@ function ScoutLeaderboardRow({
   scoutYear: number | null;
   isChef?: boolean;
   km: number;
+  dplus?: number;
+  yellowJersey?: boolean;
+  climberJersey?: boolean;
   maxKm: number;
   sportMode?: SportMode;
 }) {
@@ -1183,6 +1228,16 @@ function ScoutLeaderboardRow({
                 {scoutYear}e année
               </span>
             ) : null}
+            {yellowJersey && (
+              <span className="rounded-full bg-yellow-400 px-2 py-0.5 text-[10px] font-bold text-yellow-950">
+                Maillot jaune
+              </span>
+            )}
+            {climberJersey && (
+              <span className="rounded-full border border-red-500 bg-white px-2 py-0.5 text-[10px] font-bold text-red-600">
+                Maillot à pois
+              </span>
+            )}
           </div>
           <div className="font-display text-lg font-black text-foreground flex items-center gap-1">
             {sportMode === "course" ? (
@@ -1210,7 +1265,9 @@ function ScoutLeaderboardRow({
             />
           </div>
           <span className="shrink-0 text-xs font-medium text-muted-foreground">
-            {km.toFixed(1)} km
+            {dplus > 0
+              ? `${Math.round(dplus).toLocaleString("fr-BE")} m D+`
+              : `${km.toFixed(1)} km`}
           </span>
         </div>
       </div>

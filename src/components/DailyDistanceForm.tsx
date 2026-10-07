@@ -14,10 +14,12 @@ import {
   ArrowRight,
   MapPin,
   Footprints,
+  Mountain,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { removeStorageFiles } from "@/lib/proofStorage";
+import { parseElevation } from "@/lib/jerseys";
 import { useAuth } from "@/lib/useAuth";
 import { db, type Patrol, type ActivitySport, getPatrolEmblem } from "@/lib/database";
 import { Button } from "@/components/ui/button";
@@ -134,6 +136,7 @@ export function DailyDistanceForm({
   // Form states
   const [sport, setSport] = useState<ActivitySport>("velo");
   const [distanceKm, setDistanceKm] = useState("");
+  const [elevationM, setElevationM] = useState("");
   const [rideDate, setRideDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [selectedPatrolId, setSelectedPatrolId] = useState<string>(defaultPatrolId || "");
   const [stravaUrl, setStravaUrl] = useState("");
@@ -234,6 +237,12 @@ export function DailyDistanceForm({
     const kmNumber = parseFloat(distanceKm.replace(",", "."));
     if (!kmNumber || isNaN(kmNumber) || kmNumber <= 0 || kmNumber > 1000) {
       toast.error("Veuillez saisir une distance valide (entre 0.1 et 1000 km)");
+      return;
+    }
+
+    const elevation = parseElevation(elevationM);
+    if (elevation === "invalid") {
+      toast.error("Dénivelé invalide : indique un nombre de mètres entre 0 et 20 000");
       return;
     }
 
@@ -358,6 +367,7 @@ export function DailyDistanceForm({
       const activityPayload = {
         user_id: targetUserId,
         km: kmNumber,
+        elevation_m: elevation,
         ride_date: rideDate,
         strava_link: trimmedStrava || null,
         proof_path: proofPublicUrl,
@@ -426,6 +436,7 @@ export function DailyDistanceForm({
       );
 
       setDistanceKm("");
+      setElevationM("");
       setStravaUrl("");
       setRideNote("");
       setProofFile(null);
@@ -690,6 +701,35 @@ export function DailyDistanceForm({
                 Par défaut : aujourd&apos;hui (modifiable si la sortie date d&apos;hier).
               </p>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="elevation-m" className="text-sm font-bold flex items-center gap-2">
+              <Mountain className="h-4 w-4 text-red-600" />
+              Dénivelé positif (D+){" "}
+              <span className="text-xs font-normal text-muted-foreground">facultatif</span>
+            </Label>
+            <div className="relative sm:max-w-[calc(50%-0.5rem)]">
+              <Input
+                id="elevation-m"
+                type="number"
+                inputMode="numeric"
+                step="1"
+                min="0"
+                max="20000"
+                placeholder="ex: 350"
+                value={elevationM}
+                onChange={(e) => setElevationM(e.target.value)}
+                className="h-12 rounded-xl text-lg font-bold pl-4 pr-12 shadow-xs"
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
+                M
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Visible sur Strava ou ta montre (« dénivelé » / « elevation gain »). Compte pour le
+              maillot à pois.
+            </p>
           </div>
 
           <div className="space-y-3 rounded-xl border border-border/70 bg-card/60 p-4">

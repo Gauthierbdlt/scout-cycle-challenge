@@ -11,6 +11,7 @@ export type Database = {
       activities: {
         Row: {
           created_at: string;
+          elevation_m: number | null;
           id: string;
           km: number;
           note: string | null;
@@ -22,6 +23,7 @@ export type Database = {
         };
         Insert: {
           created_at?: string;
+          elevation_m?: number | null;
           id?: string;
           km: number;
           note?: string | null;
@@ -33,6 +35,7 @@ export type Database = {
         };
         Update: {
           created_at?: string;
+          elevation_m?: number | null;
           id?: string;
           km?: number;
           note?: string | null;

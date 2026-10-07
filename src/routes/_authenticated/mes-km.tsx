@@ -52,6 +52,7 @@ type Act = {
   user_id: string;
   ride_date: string;
   km: number;
+  elevation_m?: number | null;
   status: "pending" | "approved" | "rejected";
   strava_link: string | null;
   proof_path: string | null;
@@ -341,6 +342,12 @@ function MesKm() {
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-bold text-foreground">{displayNote}</span>
+
+                            {Number(a.elevation_m) > 0 && (
+                              <span className="rounded-full border border-red-400/50 bg-red-500/5 px-2 py-0.5 text-[10px] font-bold text-red-600">
+                                {Math.round(Number(a.elevation_m)).toLocaleString("fr-BE")} m D+
+                              </span>
+                            )}
 
                             {/* Badge Sport */}
                             <Badge
