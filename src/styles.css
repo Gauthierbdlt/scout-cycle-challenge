@@ -1,0 +1,79 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-display: "Archivo Black", system-ui, sans-serif;
+  --font-sans: "Work Sans", system-ui, sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-bark: var(--bark);
+  --color-bark-foreground: var(--bark-foreground);
+  --color-success: var(--success);
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: oklch(0.965 0.02 75);
+  --foreground: oklch(0.27 0.05 45);
+  --card: oklch(0.985 0.012 80);
+  --card-foreground: oklch(0.27 0.05 45);
+  --popover: oklch(0.985 0.012 80);
+  --popover-foreground: oklch(0.27 0.05 45);
+  --primary: oklch(0.66 0.18 48);
+  --primary-foreground: oklch(0.985 0.01 80);
+  --secondary: oklch(0.9 0.04 70);
+  --secondary-foreground: oklch(0.3 0.06 45);
+  --muted: oklch(0.92 0.025 72);
+  --muted-foreground: oklch(0.48 0.05 50);
+  --accent: oklch(0.88 0.08 65);
+  --accent-foreground: oklch(0.3 0.06 45);
+  --destructive: oklch(0.55 0.2 27);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.84 0.04 65);
+  --input: oklch(0.84 0.04 65);
+  --ring: oklch(0.66 0.18 48);
+  --bark: oklch(0.3 0.06 45);
+  --bark-foreground: oklch(0.95 0.03 75);
+  --success: oklch(0.55 0.13 145);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+}

@@ -1,0 +1,939 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import {
+  Check,
+  X,
+  Trash2,
+  Clock,
+  Shield,
+  Users,
+  Crown,
+  ExternalLink,
+  Plus,
+  Bike,
+  Footprints,
+  Calendar,
+  Edit3,
+  FileText,
+  Award,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAuth } from "@/lib/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  db,
+  type Patrol,
+  type Profile,
+  type Activity,
+  type TimelineEvent,
+  getActivitySport,
+  cleanActivityNote,
+} from "@/lib/database";
+import { AdminUserList } from "@/components/AdminUserList";
+import { ExportDialog } from "@/components/ExportDialog";
+
+export const Route = createFileRoute("/_authenticated/admin")({
+  ssr: false,
+  head: () => ({
+    meta: [
+      { title: "Administration — ALEZAN 42" },
+      {
+        name: "description",
+        content: "Gestion des patrouilles, des membres et validation des sorties.",
+      },
+      { property: "og:title", content: "Administration — ALEZAN 42" },
+      { property: "og:description", content: "Espace admin du défi vélo." },
+    ],
+  }),
+  component: Admin,
+});
+
+type CountdownItem = {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  target_date: string;
+  is_active: boolean;
+};
+
+type WeeklyBadge = {
+  id: string;
+  user_id: string;
+  badge_title: string;
+  awarded_date: string;
+  profiles?: { full_name: string; totem: string | null };
+};
+
+function Admin() {
+  const { isAdmin, loading, user } = useAuth();
+  const [patrols, setPatrols] = useState<Patrol[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [pending, setPending] = useState<Activity[]>([]);
+  const [admins, setAdmins] = useState<string[]>([]);
+  const [, setTimeline] = useState<TimelineEvent[]>([]);
+
+  // New patrol form
+  const [newPatrol, setNewPatrol] = useState({
+    name: "",
+    category: "homme" as "homme" | "femme" | "mixte",
+  });
+
+  // Countdowns state
+  const [countdowns, setCountdowns] = useState<CountdownItem[]>([]);
+  const [editingCdId, setEditingCdId] = useState<string | null>(null);
+  const [cdTitle, setCdTitle] = useState("");
+  const [cdSubtitle, setCdSubtitle] = useState("");
+  const [cdDate, setCdDate] = useState("2026-11-15T18:00");
+  const [cdActive, setCdActive] = useState(false);
+
+  // Badges state
+  const [weeklyBadges, setWeeklyBadges] = useState<WeeklyBadge[]>([]);
+  const [selectedBadgeScout, setSelectedBadgeScout] = useState("");
+  const [badgeTitleInput, setBadgeTitleInput] = useState("Coureur de la semaine 🏆");
+
+  // Export PDF
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+
+  const load = useCallback(async () => {
+    // 1. Patrols
+    const { data: ptData } = (await supabase.from("patrols").select("*").order("name")) as {
+      data: Patrol[] | null;
+    };
+    const ptList = ptData && ptData.length > 0 ? ptData : db.getPatrols();
+    setPatrols(ptList);
+
+    const hasStaffInDb = ptData?.some(
+      (p) => p.name.toLowerCase().includes("staff") || p.name.toLowerCase().includes("chef"),
+    );
+    if (!hasStaffInDb && ptData && ptData.length > 0) {
+      supabase
+        .from("patrols")
+        .insert({ name: "Staff", category: "homme" })
+        .then((res) => {
+          if (!res.error) {
+            supabase
+              .from("patrols")
+              .select("*")
+              .order("name")
+              .then((fresh) => {
+                const fData = (fresh as { data: Patrol[] | null }).data;
+                if (fData) setPatrols(fData);
+              });
+          }
+        });
+    }
+
+    // 2. Profiles
+    const { data: prData } = (await supabase.from("profiles").select("*")) as {
+      data: Profile[] | null;
+    };
+    setProfiles(prData || []);
+
+    // 3. Pending activities
+    const { data: actData } = (await supabase
+      .from("activities")
+      .select("*")
+      .eq("status", "pending")
+      .order("created_at", { ascending: false })) as { data: Activity[] | null };
+    setPending(actData || []);
+
+    // 4. Badges history
+    const { data: bgData } = await supabase
+      .from("weekly_badges")
+      .select("*, profiles(full_name, totem)")
+      .order("awarded_date", { ascending: false });
+    if (bgData) setWeeklyBadges(bgData as unknown as WeeklyBadge[]);
+
+    // 5. Admins
+    const { data: rolesData } = (await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin")) as { data: Array<{ user_id: string }> | null };
+    if (rolesData && rolesData.length > 0) {
+      setAdmins(rolesData.map((r: { user_id: string }) => r.user_id));
+    } else {
+      setAdmins(db.getAdmins());
+    }
+
+    try {
+      const { data: tlData } = await supabase
+        .from("timeline")
+        .select("*")
+        .order("year", { ascending: false });
+      if (tlData && tlData.length > 0) {
+        setTimeline(tlData as unknown as TimelineEvent[]);
+      } else {
+        setTimeline(db.getTimeline());
+      }
+    } catch {
+      setTimeline(db.getTimeline());
+    }
+
+    // 6. Countdowns from Supabase
+    try {
+      const { data: cdData } = await supabase
+        .from("countdowns")
+        .select("*")
+        .order("target_date", { ascending: true });
+      if (cdData) {
+        setCountdowns(cdData);
+      }
+    } catch (err) {
+      console.warn("Erreur chargement countdowns :", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+    return db.subscribe(load);
+  }, [load]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="flex h-64 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-background">
+        <main className="mx-auto max-w-md px-4 py-20 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive mb-4">
+            <Shield className="h-8 w-8" />
+          </div>
+          <h1 className="font-display text-2xl font-black text-foreground">
+            Accès réservé aux chefs et admins
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Connecte-toi avec le compte administrateur pour gérer la troupe.
+          </p>
+          <div className="mt-6 flex justify-center gap-3">
+            <Button asChild>
+              <Link to="/auth">Connexion Admin</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/">Retour au classement</Link>
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const approveAct = async (act: Activity) => {
+    if (act.proof_path && act.proof_path.startsWith("http")) {
+      try {
+        const urlParts = act.proof_path.split("/");
+        const fileName = urlParts[urlParts.length - 1];
+        if (fileName) {
+          await supabase.storage.from("proofs").remove([fileName]);
+        }
+      } catch (err) {
+        console.warn("Erreur lors de la suppression du fichier de preuve :", err);
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res = (await (supabase.from("activities") as any)
+      .update({ status: "approved", proof_path: null })
+      .eq("id", act.id)) as { error: { message: string } | null };
+
+    db.updateActivityStatus(act.id, "approved");
+
+    if (res?.error) {
+      toast.error("Erreur : " + res.error.message);
+    } else {
+      toast.success("Sortie validée et photo supprimée du stockage avec succès !");
+    }
+    load();
+  };
+
+  const rejectAct = async (act: Activity) => {
+    if (act.proof_path) {
+      try {
+        const filePath = act.proof_path.split("/").pop();
+        if (filePath) {
+          await supabase.storage.from("proofs").remove([filePath]);
+        }
+      } catch (err) {
+        console.warn("Erreur suppression preuve :", err);
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res = (await (supabase.from("activities") as any)
+      .update({ status: "rejected" })
+      .eq("id", act.id)) as { error: { message: string } | null };
+
+    db.updateActivityStatus(act.id, "rejected");
+
+    if (res?.error) {
+      toast.error("Erreur : " + res.error.message);
+    } else {
+      toast.error("Sortie refusée.");
+    }
+    load();
+  };
+
+  const createPatrol = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPatrol.name.trim()) return;
+    const cat = newPatrol.category === "mixte" ? "homme" : newPatrol.category;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res = (await (supabase.from("patrols") as any).insert({
+      name: newPatrol.name.trim(),
+      category: cat,
+    })) as { error: { message: string } | null };
+    db.addPatrol(newPatrol.name.trim(), newPatrol.category);
+    if (res?.error) {
+      toast.error("Erreur : " + res.error.message);
+    } else {
+      toast.success(`Patrouille "${newPatrol.name}" créée !`);
+    }
+    setNewPatrol({ name: "", category: "homme" });
+    load();
+  };
+
+  const deletePatrol = async (id: string, name: string) => {
+    if (confirm(`Supprimer la patrouille "${name}" ?`)) {
+      const res = (await supabase.from("patrols").delete().eq("id", id)) as {
+        error: { message: string } | null;
+      };
+      db.deletePatrol(id);
+      if (res?.error) {
+        toast.error("Erreur : " + res.error.message);
+      } else {
+        toast.success("Patrouille supprimée");
+      }
+      load();
+    }
+  };
+
+  const handleSaveCountdown = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        title: cdTitle.trim() || "Événement",
+        subtitle: cdSubtitle.trim() || null,
+        target_date: new Date(cdDate).toISOString(),
+        is_active: cdActive,
+      };
+
+      if (cdActive) {
+        await supabase.from("countdowns").update({ is_active: false }).neq("id", editingCdId || "new");
+      }
+
+      if (editingCdId) {
+        const { error } = await supabase.from("countdowns").update(payload).eq("id", editingCdId);
+        if (error) throw error;
+        toast.success("Compte à rebours mis à jour !");
+      } else {
+        const { error } = await supabase.from("countdowns").insert([payload]);
+        if (error) throw error;
+        toast.success("Nouveau compte à rebours ajouté !");
+      }
+
+      setEditingCdId(null);
+      setCdTitle("");
+      setCdSubtitle("");
+      setCdDate("2026-11-15T18:00");
+      setCdActive(false);
+      load();
+    } catch (err: any) {
+      toast.error("Erreur : " + (err.message || err));
+    }
+  };
+
+  const startEditCountdown = (item: CountdownItem) => {
+    setEditingCdId(item.id);
+    setCdTitle(item.title);
+    setCdSubtitle(item.subtitle || "");
+    setCdDate(item.target_date ? item.target_date.slice(0, 16) : "2026-11-15T18:00");
+    setCdActive(item.is_active);
+  };
+
+  const deleteCountdown = async (id: string) => {
+    if (confirm("Supprimer ce compte à rebours ?")) {
+      const { error } = await supabase.from("countdowns").delete().eq("id", id);
+      if (!error) {
+        toast.success("Supprimé avec succès");
+        load();
+      }
+    }
+  };
+
+  const setActiveCountdown = async (id: string) => {
+    await supabase.from("countdowns").update({ is_active: false }).neq("id", id);
+    await supabase.from("countdowns").update({ is_active: true }).eq("id", id);
+    toast.success("Compte à rebours principal mis à jour !");
+    load();
+  };
+
+  // Attribuer un badge à un scout
+  const handleAwardBadge = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBadgeScout) {
+      toast.error("Veuillez sélectionner un scout.");
+      return;
+    }
+
+    const { error } = await supabase.from("weekly_badges").insert({
+      user_id: selectedBadgeScout,
+      badge_title: badgeTitleInput.trim() || "Coureur de la semaine 🏆",
+      awarded_date: new Date().toISOString().slice(0, 10),
+    });
+
+    if (error) {
+      toast.error("Erreur : " + error.message);
+    } else {
+      toast.success("Badge attribué avec succès ! Ce coureur est désormais exclu du classement des badges.");
+      setSelectedBadgeScout("");
+      load();
+    }
+  };
+
+  const handleDeleteBadge = async (id: string) => {
+    if (confirm("Retirer ce badge ?")) {
+      const { error } = await supabase.from("weekly_badges").delete().eq("id", id);
+      if (!error) {
+        toast.success("Badge supprimé.");
+        load();
+      }
+    }
+  };
+
+  // Scouts éligibles (n'ayant pas encore reçu de badge)
+  const awardedUserIds = weeklyBadges.map((b) => b.user_id);
+  const eligibleScouts = profiles.filter((p) => !awardedUserIds.includes(p.id));
+
+  return (
+    <div className="min-h-screen bg-background">
+      <main className="mx-auto max-w-6xl px-4 py-8 md:py-12 space-y-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
+              <Shield className="h-3.5 w-3.5" />
+              <span>Panneau d'Administration</span>
+            </div>
+            <h1 className="mt-2 font-display text-3xl font-black text-foreground">
+              Gestion de l'ALEZAN 42
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Valide les kilomètres, configure les badges de la semaine et organise les patrouilles
+            </p>
+          </div>
+
+          <Button
+            onClick={() => setExportModalOpen(true)}
+            className="gap-2 font-bold bg-primary text-primary-foreground shadow-md hover:bg-primary/90 shrink-0"
+          >
+            <FileText className="h-4 w-4" />
+            Exporter en PDF
+          </Button>
+        </div>
+
+        <Tabs defaultValue="validations" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 rounded-xl p-1 bg-muted">
+            <TabsTrigger value="validations" className="rounded-lg text-xs font-bold gap-1.5">
+              <Check className="h-4 w-4" />
+              Sorties ({pending.length})
+            </TabsTrigger>
+            <TabsTrigger value="badges" className="rounded-lg text-xs font-bold gap-1.5">
+              <Award className="h-4 w-4" />
+              Badges ({weeklyBadges.length})
+            </TabsTrigger>
+            <TabsTrigger value="countdown" className="rounded-lg text-xs font-bold gap-1.5">
+              <Clock className="h-4 w-4" />
+              Comptes à rebours
+            </TabsTrigger>
+            <TabsTrigger value="patrols" className="rounded-lg text-xs font-bold gap-1.5">
+              <Crown className="h-4 w-4" />
+              Patrouilles ({patrols.length})
+            </TabsTrigger>
+            <TabsTrigger value="scouts" className="rounded-lg text-xs font-bold gap-1.5">
+              <Users className="h-4 w-4" />
+              Membres
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab 1: Pending Validations */}
+          <TabsContent value="validations" className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-lg font-bold text-foreground">
+                Sorties en attente de validation ({pending.length})
+              </h2>
+            </div>
+
+            {pending.length === 0 ? (
+              <div className="rounded-2xl border bg-card p-12 text-center text-muted-foreground">
+                <Check className="mx-auto h-8 w-8 text-emerald-500 mb-2" />
+                <p className="font-semibold text-foreground">Toutes les sorties sont à jour !</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {pending.map((act) => {
+                  const scout = profiles.find((p) => p.id === act.user_id);
+                  const patrol = patrols.find((p) => p.id === scout?.patrol_id);
+
+                  return (
+                    <div
+                      key={act.id}
+                      className="flex flex-col gap-4 rounded-2xl border border-border/80 bg-card p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm"
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-primary/10 font-display text-xl font-black text-primary">
+                          {Number(act.km).toFixed(1)}
+                          <span className="text-[10px] font-normal text-muted-foreground">km</span>
+                        </span>
+
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-foreground">
+                              {scout?.totem || scout?.full_name || "Scout inconnu"}
+                            </span>
+                            <Badge variant="outline" className="text-[10px]">
+                              {patrol?.name || "Sans patrouille"}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className={
+                                getActivitySport(act) === "course"
+                                  ? "border-purple-300 bg-purple-50 text-purple-700 text-[10px] gap-1"
+                                  : "border-emerald-300 bg-emerald-50 text-emerald-700 text-[10px] gap-1"
+                              }
+                            >
+                              {getActivitySport(act) === "course" ? (
+                                <>
+                                  <Footprints className="h-3 w-3" />
+                                  <span>Course</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Bike className="h-3 w-3" />
+                                  <span>Vélo</span>
+                                </>
+                              )}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Sortie du {new Date(act.ride_date).toLocaleDateString("fr-FR")} •{" "}
+                            {cleanActivityNote(act.note) || "Sortie"}
+                          </p>
+                          {act.proof_path && (
+                            <div className="mt-2">
+                              <a
+                                href={act.proof_path}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline"
+                              >
+                                Voir la photo de preuve
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end sm:self-center">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => rejectAct(act)}
+                          className="gap-1 text-destructive hover:bg-destructive/10 border-destructive/30"
+                        >
+                          <X className="h-4 w-4" />
+                          Refuser
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => approveAct(act)}
+                          className="gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                        >
+                          <Check className="h-4 w-4" />
+                          Valider les km
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Tab 2: Weekly Badges */}
+          <TabsContent value="badges" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
+                <div className="flex items-center gap-2 border-b pb-4">
+                  <Award className="h-5 w-5 text-amber-500" />
+                  <div>
+                    <h2 className="font-display text-lg font-bold text-foreground">
+                      Attribuer un badge de la semaine
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      Le coureur sélectionné recevra son badge et sera exclu des futurs classements de badges.
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleAwardBadge} className="mt-4 space-y-4">
+                  <div>
+                    <Label htmlFor="badge-title">Titre du badge / Distinction</Label>
+                    <Input
+                      id="badge-title"
+                      value={badgeTitleInput}
+                      onChange={(e) => setBadgeTitleInput(e.target.value)}
+                      placeholder="Ex: Coureur de la semaine 🏆"
+                      required
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="scout-select">Sélectionner un coureur éligible</Label>
+                    <Select value={selectedBadgeScout} onValueChange={setSelectedBadgeScout}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Choisir un scout..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {eligibleScouts.length === 0 ? (
+                          <SelectItem value="none" disabled>Tous les scouts ont déjà un badge !</SelectItem>
+                        ) : (
+                          eligibleScouts.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.totem ? `${s.totem} (${s.full_name})` : s.full_name || s.email}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button type="submit" className="w-full font-bold bg-amber-500 hover:bg-amber-600 text-amber-950">
+                    <Award className="mr-2 h-4 w-4" /> Attribuer le badge unique
+                  </Button>
+                </form>
+              </div>
+
+              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
+                <h2 className="font-display text-lg font-bold text-foreground border-b pb-3 flex items-center justify-between">
+                  <span>Historique des badges ({weeklyBadges.length})</span>
+                </h2>
+
+                <div className="mt-4 space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                  {weeklyBadges.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-6">Aucun badge attribué pour le moment.</p>
+                  ) : (
+                    weeklyBadges.map((b) => {
+                      const scoutName = b.profiles?.totem ? `${b.profiles.totem} (${b.profiles.full_name})` : b.profiles?.full_name || "Scout";
+                      return (
+                        <div
+                          key={b.id}
+                          className="flex items-center justify-between rounded-xl border p-3 bg-muted/20 hover:bg-muted/40 transition"
+                        >
+                          <div className="space-y-0.5 pr-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-xs text-foreground flex items-center gap-1">
+                                🏅 {b.badge_title}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground">
+                              Attribué à <strong className="text-foreground">{scoutName}</strong> le {new Date(b.awarded_date).toLocaleDateString("fr-FR")}
+                            </p>
+                          </div>
+
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                            onClick={() => handleDeleteBadge(b.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Tab 3: Countdowns Management */}
+          <TabsContent value="countdown" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
+                <div className="flex items-center gap-2 border-b pb-4">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <div>
+                    <h2 className="font-display text-lg font-bold text-foreground">
+                      {editingCdId ? "Modifier le compte à rebours" : "Ajouter un compte à rebours"}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      Gère les échéances importantes de la troupe
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSaveCountdown} className="mt-4 space-y-4">
+                  <div>
+                    <Label htmlFor="cd-title">Nom de l'événement</Label>
+                    <Input
+                      id="cd-title"
+                      value={cdTitle}
+                      onChange={(e) => setCdTitle(e.target.value)}
+                      placeholder="Ex: Grand Camp d'été 2026"
+                      required
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="cd-sub">Sous-titre (optionnel)</Label>
+                    <Input
+                      id="cd-sub"
+                      value={cdSubtitle}
+                      onChange={(e) => setCdSubtitle(e.target.value)}
+                      placeholder="Ex: Rassemblement final"
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="cd-date">Date et heure de fin</Label>
+                    <Input
+                      id="cd-date"
+                      type="datetime-local"
+                      value={cdDate}
+                      onChange={(e) => setCdDate(e.target.value)}
+                      required
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2">
+                    <input
+                      type="checkbox"
+                      id="cd-active"
+                      checked={cdActive}
+                      onChange={(e) => setCdActive(e.target.checked)}
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <Label htmlFor="cd-active" className="cursor-pointer text-sm font-normal">
+                      Définir comme actif sur l'accueil
+                    </Label>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    {editingCdId && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setEditingCdId(null);
+                          setCdTitle("");
+                          setCdSubtitle("");
+                          setCdDate("2026-11-15T18:00");
+                          setCdActive(false);
+                        }}
+                      >
+                        Annuler
+                      </Button>
+                    )}
+                    <Button type="submit" className="font-bold bg-primary text-primary-foreground flex-1">
+                      {editingCdId ? "Mettre à jour" : "Créer l'élément"}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+
+              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
+                <h2 className="font-display text-lg font-bold text-foreground border-b pb-3 flex items-center justify-between">
+                  <span>Liste des échéances ({countdowns.length})</span>
+                </h2>
+
+                <div className="mt-4 space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                  {countdowns.length === 0 ? (
+                    <p className="text-xs text-muted-foreground text-center py-6">Aucun compte à rebours configuré.</p>
+                  ) : (
+                    countdowns.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between rounded-xl border p-3 bg-muted/20 hover:bg-muted/40 transition"
+                      >
+                        <div className="space-y-0.5 pr-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-xs text-foreground">{item.title}</span>
+                            {item.is_active && (
+                              <Badge className="bg-emerald-500/15 text-emerald-600 text-[10px] font-bold">
+                                Actif
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(item.target_date).toLocaleString("fr-FR")}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          {!item.is_active && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-[11px] h-7 px-2"
+                              onClick={() => setActiveCountdown(item.id)}
+                            >
+                              Activer
+                            </Button>
+                          )}
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-muted-foreground hover:text-primary"
+                            onClick={() => startEditCountdown(item)}
+                          >
+                            <Edit3 className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                            onClick={() => deleteCountdown(item.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Tab 4: Patrols Management */}
+          <TabsContent value="patrols" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
+                <h2 className="font-display text-lg font-bold text-foreground border-b pb-3">
+                  Ajouter une patrouille
+                </h2>
+
+                <form onSubmit={createPatrol} className="mt-4 space-y-4">
+                  <div>
+                    <Label htmlFor="patrol-name">Nom de la patrouille</Label>
+                    <Input
+                      id="patrol-name"
+                      placeholder="Ex: Cerfs, Alouettes..."
+                      value={newPatrol.name}
+                      onChange={(e) => setNewPatrol({ ...newPatrol, name: e.target.value })}
+                      required
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Catégorie</Label>
+                    <Select
+                      value={newPatrol.category}
+                      onValueChange={(v: "homme" | "femme" | "mixte") =>
+                        setNewPatrol({ ...newPatrol, category: v })
+                      }
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="homme">Garçons</SelectItem>
+                        <SelectItem value="femme">Filles</SelectItem>
+                        <SelectItem value="mixte">👑 Chefs & Maîtrise</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button type="submit" className="font-bold bg-primary text-primary-foreground">
+                    <Plus className="mr-1.5 h-4 w-4" />
+                    Créer la patrouille
+                  </Button>
+                </form>
+              </div>
+
+              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
+                <h2 className="font-display text-lg font-bold text-foreground border-b pb-3">
+                  Patrouilles actives ({patrols.length})
+                </h2>
+                <div className="mt-4 space-y-2 max-h-96 overflow-y-auto pr-1">
+                  {patrols.map((p) => {
+                    const count = profiles.filter((m) => m.patrol_id === p.id).length;
+                    return (
+                      <div
+                        key={p.id}
+                        className="flex items-center justify-between rounded-xl border p-3 hover:bg-accent/30 transition"
+                      >
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-foreground">{p.name}</span>
+                            <Badge variant="secondary" className="text-[10px]">
+                              {p.category}
+                            </Badge>
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {count} scout{count > 1 ? "s" : ""}
+                          </span>
+                        </div>
+
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => deletePatrol(p.id, p.name)}
+                          className="text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Tab 5: Scouts & Roles */}
+          <TabsContent value="scouts" className="space-y-6">
+            <AdminUserList
+              profiles={profiles}
+              patrols={patrols}
+              admins={admins}
+              onRefresh={load}
+              currentUserId={user?.id}
+              currentUserEmail={user?.email}
+            />
+          </TabsContent>
+        </Tabs>
+      </main>
+
+      {/* MODALE D'EXPORT PDF */}
+      <ExportDialog open={exportModalOpen} onOpenChange={setExportModalOpen} patrols={patrols} />
+    </div>
+  );
+}
+
+export default Admin;
