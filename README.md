@@ -31,7 +31,70 @@ Concours de vélo entre patrouilles scoutes pour déterminer qui parcourt le plu
 
 Pour travailler en local sur le projet :
 
-1. Cloner le dépôt :
+1. Installer [Git](https://git-scm.com), [Node.js 22](https://nodejs.org) et [VS Code](https://code.visualstudio.com).
+2. Cloner le dépôt :
    ```bash
-   git clone <url-du-repo>
-   cd <nom-du-repo>
+   git clone https://github.com/Gauthierbdlt/scout-cycle-challenge.git
+   cd scout-cycle-challenge
+   ```
+3. Installer les dépendances :
+   ```bash
+   npm install
+   ```
+4. Créer son fichier `.env` local à partir de `.env.example` et y mettre l'URL et la clé *publishable* du projet Supabase
+   (Supabase → Project Settings → API). Ce fichier n'est **jamais** envoyé sur GitHub.
+5. Lancer le site en local :
+   ```bash
+   npm run dev
+   ```
+   puis ouvrir http://localhost:3000.
+
+> Le dossier `data/` sert uniquement de cache local en développement. Il est ignoré par Git
+> pour éviter les conflits entre nos deux machines. Les vraies données sont dans Supabase.
+
+---
+
+## 🤝 Travailler à deux
+
+La branche `main` = le site en ligne. On n'y travaille jamais directement.
+
+1. Se mettre à jour avant de commencer :
+   ```bash
+   git checkout main
+   git pull
+   ```
+2. Créer une branche pour sa modification :
+   ```bash
+   git checkout -b nom-de-la-modif
+   ```
+3. Travailler, puis enregistrer et envoyer :
+   ```bash
+   git add .
+   git commit -m "Ce que j'ai changé"
+   git push -u origin nom-de-la-modif
+   ```
+4. Sur GitHub, ouvrir une *Pull Request* vers `main`. L'autre relit (Cloudflare fournit une URL de
+   prévisualisation pour tester), puis on fusionne. Le site se met à jour automatiquement.
+
+Règles simples : une branche par sujet, des Pull Requests petites, et on prévient l'autre si on
+touche aux mêmes fichiers.
+
+---
+
+## 🌍 Mise en ligne (Cloudflare Pages)
+
+Le site est **100 % statique** : toute la logique tourne dans le navigateur et parle directement à
+Supabase. La sécurité est assurée par les règles RLS de la base, pas par un serveur.
+
+Réglages du projet Cloudflare Pages :
+
+| Réglage | Valeur |
+|---|---|
+| Framework preset | None |
+| Build command | `npm run build` |
+| Build output directory | `.output/public` |
+| Variable d'environnement | `NODE_VERSION` = `22` |
+| Variables d'environnement | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` |
+
+Après la première mise en ligne, ajouter l'adresse du site dans Supabase →
+Authentication → URL Configuration (*Site URL* et *Redirect URLs*).

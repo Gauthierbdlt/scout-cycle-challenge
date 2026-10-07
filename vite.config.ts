@@ -106,8 +106,17 @@ export default defineConfig({
     scoutServerApiPlugin(),
     tanstackStart({
       server: { entry: "server" },
+      // Mode SPA : le site est généré en fichiers statiques (index.html + assets).
+      // Toute la logique tourne dans le navigateur et parle directement à Supabase,
+      // la sécurité est assurée par les règles RLS de la base.
+      spa: {
+        enabled: true,
+        prerender: { outputPath: "/index.html" },
+      },
     }),
     nitro({
+      // Le serveur n'est utilisé qu'au moment du build pour générer index.html.
+      // Seul le dossier .output/public est publié (Cloudflare Pages).
       preset: "node-server",
     }),
     react(),
