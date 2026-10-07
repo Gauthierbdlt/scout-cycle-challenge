@@ -82,7 +82,7 @@ function Profil() {
           (p) => p.name.toLowerCase().includes("staff") || p.name.toLowerCase().includes("chef"),
         )
       ) {
-        list = [{ id: "staff", name: "Staff", category: "mixte" }, ...list];
+        list = [{ id: "staff", name: "Staff", category: "staff" }, ...list];
       }
       if (active) {
         setPatrols(list);
@@ -118,7 +118,7 @@ function Profil() {
   const isChefPatrol =
     selectedPatrol?.name.toLowerCase().includes("staff") ||
     selectedPatrol?.name.toLowerCase().includes("chef") ||
-    selectedPatrol?.category === "mixte";
+    selectedPatrol?.category === "staff";
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -300,11 +300,11 @@ function Profil() {
                     const isStaff =
                       p.name.toLowerCase().includes("staff") ||
                       p.name.toLowerCase().includes("chef") ||
-                      p.category === "mixte";
+                      p.category === "staff";
                     return (
                       <SelectItem key={p.id} value={p.id}>
                         {isStaff
-                          ? "👑 Staff (Mixte : Homme & Femme)"
+                          ? "👑 Staff (Garçons & Filles)"
                           : `${p.name} (${p.category === "homme" ? "Garçons" : "Filles"})`}
                       </SelectItem>
                     );

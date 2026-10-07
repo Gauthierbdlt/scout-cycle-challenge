@@ -193,7 +193,7 @@ export type Database = {
     Enums: {
       activity_status: "pending" | "approved" | "rejected";
       app_role: "admin" | "user";
-      patrol_category: "homme" | "femme";
+      patrol_category: "homme" | "femme" | "staff";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -317,7 +317,7 @@ export const Constants = {
     Enums: {
       activity_status: ["pending", "approved", "rejected"],
       app_role: ["admin", "user"],
-      patrol_category: ["homme", "femme"],
+      patrol_category: ["homme", "femme", "staff"],
     },
   },
 } as const;

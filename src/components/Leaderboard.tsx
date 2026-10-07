@@ -45,7 +45,7 @@ export interface Activity {
 export interface Patrol {
   id: string;
   name: string;
-  category: "homme" | "femme" | "mixte";
+  category: "homme" | "femme" | "staff";
 }
 
 export interface DatabaseResponse {
@@ -61,7 +61,7 @@ export interface RankedCyclist {
   totem: string | null;
   quali: string | null;
   patrolName: string;
-  patrolCategory: "homme" | "femme" | "mixte";
+  patrolCategory: "homme" | "femme" | "staff";
   scoutYear: number | null;
   isChef: boolean;
   totalKm: number;
@@ -153,7 +153,7 @@ export function Leaderboard({ className }: { className?: string }) {
     const list: RankedCyclist[] = data.profiles.map((profile) => {
       const patrol = profile.patrol_id ? patrolsMap.get(profile.patrol_id) : undefined;
       const patrolName = patrol ? patrol.name : profile.is_chef ? "Staff" : "Indépendant";
-      const patrolCategory = patrol ? patrol.category : profile.is_chef ? "mixte" : "homme";
+      const patrolCategory = patrol ? patrol.category : profile.is_chef ? "staff" : "homme";
 
       // Filter cyclist rides by current date range and valid status
       const userActivities = (data.activities || []).filter((act) => {

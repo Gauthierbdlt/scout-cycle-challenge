@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { db, type Profile as DbLocalProfile, type Patrol as DbLocalPatrol } from "@/lib/database";
+import { isStaffPatrol } from "@/lib/categories";
 
 export interface ScoutProfile {
   id: string;
@@ -86,11 +87,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!profError && prof) {
         const patrolData = prof.patrols;
-        const isChef =
-          currentUser.email?.toLowerCase() === "baudeletgauthier@gmail.com" ||
-          patrolData?.name?.toLowerCase().includes("staff") ||
-          patrolData?.name?.toLowerCase().includes("chef") ||
-          patrolData?.category === "mixte";
+        const isMasterAdmin = currentUser.email?.toLowerCase() === "baudeletgauthier@gmail.com";
+        const isChef = isMasterAdmin || isStaffPatrol(patrolData);
 
         setProfile({
           id: prof.id,
@@ -103,9 +101,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           strava_url: prof.strava_url ?? null,
           patrol_id: prof.patrol_id ?? null,
           patrol_name: patrolData?.name ?? (isChef ? "Staff" : null),
-          patrol_category: patrolData?.category ?? (isChef ? "mixte" : null),
+          patrol_category: patrolData?.category ?? (isChef ? "staff" : null),
           is_chef: isChef,
-          is_admin: isChef || !!prof.is_admin,
+          // Droits admin : uniquement ceux enregistrés en base (user_roles -> is_admin).
+          // Être dans une patrouille staff ne rend pas admin.
+          is_admin: isMasterAdmin || !!prof.is_admin,
           onboarded: !!prof.onboarded,
           created_at: prof.created_at,
         });
@@ -157,7 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               strava_url: createdProf.strava_url ?? null,
               patrol_id: createdProf.patrol_id ?? null,
               patrol_name: patrolData?.name ?? (isChef ? "Staff" : null),
-              patrol_category: patrolData?.category ?? (isChef ? "mixte" : null),
+              patrol_category: patrolData?.category ?? (isChef ? "staff" : null),
               is_chef: isChef,
               onboarded: true,
               created_at: createdProf.created_at,
@@ -202,7 +202,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             strava_url: localProf.strava_url,
             patrol_id: localProf.patrol_id,
             patrol_name: localPatrol?.name ?? (isChef ? "Staff" : null),
-            patrol_category: localPatrol?.category ?? (isChef ? "mixte" : null),
+            patrol_category: localPatrol?.category ?? (isChef ? "staff" : null),
             is_chef: !!isChef,
             onboarded: localProf.onboarded,
             created_at: localProf.created_at,

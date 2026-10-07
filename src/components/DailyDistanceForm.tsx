@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { isStaffPatrol } from "@/lib/categories";
 
 export interface DailyDistanceFormProps {
   /** Callback fired after a successful submission */
@@ -160,16 +161,14 @@ export function DailyDistanceForm({
 
       let list = (data as Patrol[]) || [];
 
-      const hasStaff = list.some(
-        (p) => p.name?.toLowerCase().includes("staff") || p.name?.toLowerCase().includes("chef"),
-      );
+      const hasStaff = list.some((p) => isStaffPatrol(p));
       if (!hasStaff) {
         list = [
           ...list,
           {
             id: "staff",
             name: "Staff",
-            category: "mixte",
+            category: "staff",
             created_at: new Date().toISOString(),
           },
         ];
@@ -573,7 +572,7 @@ export function DailyDistanceForm({
               <SelectContent className="max-h-80 rounded-xl">
                 {patrols.map((p) => {
                   const emblem = getPatrolEmblem(p.name);
-                  const isStaff = p.category === "mixte" || p.name.toLowerCase().includes("staff");
+                  const isStaff = isStaffPatrol(p);
                   return (
                     <SelectItem
                       key={p.id}

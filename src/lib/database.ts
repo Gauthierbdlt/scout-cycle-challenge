@@ -2,7 +2,7 @@
 // 100% independent of Lovable and external cloud dependencies.
 // Persists in localStorage with high-fidelity seed data and real-time subscriber events.
 
-export type PatrolCategory = "homme" | "femme" | "mixte";
+export type PatrolCategory = "homme" | "femme" | "staff";
 
 export interface Patrol {
   id: string;
@@ -176,7 +176,7 @@ const SEED_PATROLS: Patrol[] = [
   {
     id: "patrol-staff",
     name: "Staff",
-    category: "mixte",
+    category: "staff",
     created_at: "2026-09-01T00:00:00Z",
   },
   { id: "patrol-lynx", name: "Lynx", category: "femme", created_at: "2026-09-01T00:00:00Z" },
@@ -608,7 +608,7 @@ class StandaloneDatabase {
     const isStaffOrChef =
       patrol?.name.toLowerCase().includes("staff") ||
       patrol?.name.toLowerCase().includes("chef") ||
-      patrol?.category === "mixte" ||
+      patrol?.category === "staff" ||
       current.is_chef;
 
     const updated: Profile = {
@@ -764,7 +764,7 @@ class StandaloneDatabase {
         const isChef =
           patrol?.name.toLowerCase().includes("staff") ||
           patrol?.name.toLowerCase().includes("chef") ||
-          patrol?.category === "mixte" ||
+          patrol?.category === "staff" ||
           p.is_chef;
 
         return {
@@ -779,7 +779,7 @@ class StandaloneDatabase {
           is_chef: isChef,
           patrol_id: p.patrol_id!,
           patrol_name: patrol?.name || "Patrouille",
-          category: patrol?.category || "mixte",
+          category: patrol?.category || "staff",
           km,
         };
       });

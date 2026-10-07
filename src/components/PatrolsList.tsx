@@ -22,11 +22,12 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { isStaffPatrol, matchesCategory } from "@/lib/categories";
 
 export interface PatrolRecord {
   id: string;
   name: string;
-  category: "homme" | "femme" | "mixte";
+  category: "homme" | "femme" | "staff";
   created_at?: string;
 }
 
@@ -39,7 +40,7 @@ export interface PatrolMemberStat {
 export interface PatrolWithStats {
   id: string;
   name: string;
-  category: "homme" | "femme" | "mixte";
+  category: "homme" | "femme" | "staff";
   totalKm: number;
   membersCount: number;
   contributorsCount: number;
@@ -59,7 +60,7 @@ export interface PatrolsListProps {
   /** Initial period filter */
   initialPeriod?: "week" | "last" | "all";
   /** Initial category filter */
-  initialCategory?: "all" | "homme" | "femme" | "mixte";
+  initialCategory?: "all" | "homme" | "femme" | "staff";
   /** Compact view without hero banner */
   compact?: boolean;
   /** Optional class name */
@@ -110,7 +111,7 @@ export function PatrolsList({
   className,
 }: PatrolsListProps) {
   const [period, setPeriod] = useState<"week" | "last" | "all">(initialPeriod);
-  const [category, setCategory] = useState<"all" | "homme" | "femme" | "mixte">(initialCategory);
+  const [category, setCategory] = useState<"all" | "homme" | "femme" | "staff">(initialCategory);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -142,11 +143,9 @@ export function PatrolsList({
         let fetchedPatrols = (patrolsData as PatrolRecord[]) || [];
 
         // S'assurer que le Staff est présent si jamais non configuré
-        const hasStaff = fetchedPatrols.some(
-          (p) => p.name.toLowerCase().includes("staff") || p.name.toLowerCase().includes("chef"),
-        );
+        const hasStaff = fetchedPatrols.some((p) => isStaffPatrol(p));
         if (!hasStaff) {
-          fetchedPatrols = [...fetchedPatrols, { id: "staff", name: "Staff", category: "mixte" }];
+          fetchedPatrols = [...fetchedPatrols, { id: "staff", name: "Staff", category: "staff" }];
         }
         setPatrols(fetchedPatrols);
 
@@ -329,16 +328,8 @@ export function PatrolsList({
   const filteredPatrols = useMemo(() => {
     return rankedPatrols.filter((p) => {
       // Filtre catégorie
-      if (category !== "all") {
-        if (category === "mixte") {
-          const isStaff = p.category === "mixte" || p.name.toLowerCase().includes("staff");
-          if (!isStaff) return false;
-        } else if (p.category !== category) {
-          // La patrouille staff apparaît aussi si mixte
-          const isStaff = p.name.toLowerCase().includes("staff");
-          if (!isStaff) return false;
-        }
-      }
+      // Les patrouilles staff apparaissent dans toutes les catégories
+      if (!matchesCategory(p.category, isStaffPatrol(p), category)) return false;
 
       // Filtre recherche
       if (searchQuery.trim()) {
@@ -533,8 +524,8 @@ export function PatrolsList({
               </Button>
               <Button
                 size="sm"
-                variant={category === "mixte" ? "secondary" : "ghost"}
-                onClick={() => setCategory("mixte")}
+                variant={category === "staff" ? "secondary" : "ghost"}
+                onClick={() => setCategory("staff")}
                 className="h-7 px-2.5 text-xs font-medium"
               >
                 Staff
@@ -621,8 +612,7 @@ export function PatrolsList({
             const isSecond = patrol.rank === 2 && patrol.totalKm > 0;
             const isThird = patrol.rank === 3 && patrol.totalKm > 0;
             const isExpanded = expandedPatrolId === patrol.id;
-            const isStaff =
-              patrol.category === "mixte" || patrol.name.toLowerCase().includes("staff");
+            const isStaff = isStaffPatrol(patrol);
 
             return (
               <div
