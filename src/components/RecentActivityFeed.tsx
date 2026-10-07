@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/useAuth";
 import { cn } from "@/lib/utils";
+import { isStaffPatrol } from "@/lib/categories";
 
 export interface RecentActivityItem {
   id: string;
@@ -37,7 +38,7 @@ export interface RecentActivityItem {
   scoutQuali?: string | null;
   patrolId: string;
   patrolName: string;
-  patrolCategory: "homme" | "femme" | "mixte";
+  patrolCategory: "homme" | "femme" | "staff";
   km: number;
   rideDate: string;
   createdAt: string;
@@ -206,7 +207,7 @@ export function RecentActivityFeed({
           }
 
           const patrolName = patrol ? patrol.name : "Staff";
-          const patrolCategory = patrol ? patrol.category : "mixte";
+          const patrolCategory = patrol ? patrol.category : "staff";
 
           const timestampToUse = act.created_at || act.ride_date;
 
@@ -336,8 +337,7 @@ export function RecentActivityFeed({
           <div className="divide-y divide-border/40">
             {activities.map((act) => {
               const emblem = getPatrolEmblem(act.patrolName);
-              const isStaff =
-                act.patrolCategory === "mixte" || act.patrolName.toLowerCase().includes("staff");
+              const isStaff = isStaffPatrol({ name: act.patrolName, category: act.patrolCategory });
 
               return (
                 <div

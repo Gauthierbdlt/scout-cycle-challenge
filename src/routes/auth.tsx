@@ -30,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import { db } from "@/lib/database";
+import { isStaffPatrol } from "@/lib/categories";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -47,7 +48,7 @@ export const Route = createFileRoute("/auth")({
 interface PatrolItem {
   id: string;
   name: string;
-  category: "homme" | "femme" | "mixte";
+  category: "homme" | "femme" | "staff";
 }
 
 const loginSchema = z.object({
@@ -101,7 +102,7 @@ function AuthPage() {
         (p) => p.name.toLowerCase().includes("staff") || p.name.toLowerCase().includes("chef"),
       );
       if (!hasStaff) {
-        list = [{ id: "staff", name: "Staff", category: "mixte" }, ...list];
+        list = [{ id: "staff", name: "Staff", category: "staff" }, ...list];
       }
       setPatrols(list);
     }
@@ -233,10 +234,7 @@ function AuthPage() {
       d.scout_year === "chef" ||
       d.patrol_id === "staff" ||
       d.patrol_id === "patrol-staff" ||
-      patrols
-        .find((p) => p.id === d.patrol_id)
-        ?.name.toLowerCase()
-        .includes("staff");
+      isStaffPatrol(patrols.find((p) => p.id === d.patrol_id));
     const scoutYearNum = isStaff ? null : Number(d.scout_year);
 
     try {
@@ -575,11 +573,11 @@ function AuthPage() {
                             const isStaff =
                               p.name.toLowerCase().includes("staff") ||
                               p.name.toLowerCase().includes("chef") ||
-                              p.category === "mixte";
+                              p.category === "staff";
                             return (
                               <SelectItem key={p.id} value={p.id}>
                                 {isStaff
-                                  ? "👑 Staff (Mixte : Homme & Femme)"
+                                  ? "👑 Staff (Garçons & Filles)"
                                   : `${p.name} (${p.category === "femme" ? "Guide / F" : "Scout / H"})`}
                               </SelectItem>
                             );

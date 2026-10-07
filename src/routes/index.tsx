@@ -31,6 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { weekRange, useAuth } from "@/lib/useAuth";
 import { db, type Patrol, getActivitySport, type ActivitySport, getPatrolEmblem } from "@/lib/database";
 import { cn } from "@/lib/utils";
+import { isStaffPatrol, matchesCategory } from "@/lib/categories";
 
 interface LeaderboardItem {
   user_id: string;
@@ -170,11 +171,7 @@ function Index() {
         const items: LeaderboardItem[] = profs
           .map((p) => {
             const pt = p.patrols;
-            const isStaffOrChef =
-              !!p.is_admin ||
-              pt?.name?.toLowerCase().includes("staff") ||
-              pt?.category === "mixte" ||
-              p.scout_year === null;
+            const isStaffOrChef = !!p.is_admin || isStaffPatrol(pt) || p.scout_year === null;
 
             const userActs = acts.filter((a) => {
               if (a.user_id !== p.id) return false;
@@ -203,7 +200,7 @@ function Index() {
               full_name: p.full_name,
               patrol_id: p.patrol_id || "",
               patrol_name: pt?.name || (isStaffOrChef ? "Staff" : "Sans patrouille"),
-              category: (pt?.category as "homme" | "femme") || "homme",
+              category: isStaffOrChef ? "staff" : (pt?.category as "homme" | "femme") || "homme",
               km: Number(totalKm.toFixed(1)),
               scout_year: p.scout_year ?? undefined,
               is_chef: isStaffOrChef,
@@ -234,19 +231,10 @@ function Index() {
     if (!Array.isArray(leaderboardData)) return [];
     return leaderboardData.filter((r) => {
       if (!r) return false;
-      const isStaffOrChef =
-        !!r.is_chef ||
-        r.patrol_name?.toLowerCase().includes("staff") ||
-        r.patrol_name?.toLowerCase().includes("chef") ||
-        r.category === "mixte";
+      const isStaffOrChef = !!r.is_chef || r.category === "staff";
 
-      // 1. Gender filter:
-      // Staff counts in both boy and girl / homme and femme rankings!
-      if (cat !== "all") {
-        if (!isStaffOrChef && r.category !== cat) {
-          return false;
-        }
-      }
+      // 1. Catégorie : le staff apparaît chez les Garçons ET chez les Filles
+      if (!matchesCategory(r.category, isStaffOrChef, cat)) return false;
 
       // 2. Scout year filter:
       if (scoutYear !== "all") {
@@ -269,9 +257,7 @@ function Index() {
     if (!Array.isArray(patrols)) return [];
 
     // Ensure Staff patrol is always in the list of patrols
-    const hasStaff = patrols.some(
-      (p) => p.name?.toLowerCase().includes("staff") || p.name?.toLowerCase().includes("chef"),
-    );
+    const hasStaff = patrols.some((p) => isStaffPatrol(p));
     const combinedPatrols = hasStaff
       ? patrols
       : [
@@ -287,44 +273,28 @@ function Index() {
     return combinedPatrols
       .filter((p) => {
         if (!p) return false;
-        const isStaffPatrol =
-          p.name?.toLowerCase().includes("staff") ||
-          p.name?.toLowerCase().includes("chef") ||
-          p.category === "mixte";
-
-        if (cat === "all") return true;
-        // Staff patrol counts as both boy and girl / homme and femme!
-        if (isStaffPatrol) return true;
-        return p.category === cat;
+        // Les patrouilles staff apparaissent chez les Garçons ET chez les Filles
+        return matchesCategory(p.category, isStaffPatrol(p), cat);
       })
       .map((p) => {
-        const isStaffPatrol =
-          p.name?.toLowerCase().includes("staff") ||
-          p.name?.toLowerCase().includes("chef") ||
-          p.category === "mixte";
+        const staffPatrol = isStaffPatrol(p);
 
-        // Find matching scouts from filteredScouts
+        // Membres de la patrouille. Les animateurs sans patrouille sont rattachés
+        // à la patrouille « Staff » (et pas à chacune des patrouilles staff).
+        const isMainStaffPatrol = staffPatrol && p.name?.toLowerCase().includes("staff");
         const members = Array.isArray(filteredScouts)
           ? filteredScouts.filter((r) => {
               if (!r) return false;
               if (r.patrol_id === p.id) return true;
-              if (
-                isStaffPatrol &&
-                (r.is_chef ||
-                  r.patrol_name?.toLowerCase().includes("staff") ||
-                  r.patrol_name?.toLowerCase().includes("chef"))
-              ) {
-                return true;
-              }
-              return false;
+              return isMainStaffPatrol && r.is_chef && !r.patrol_id;
             })
           : [];
         const km = members.reduce((s, r) => s + Number(r?.km || 0), 0);
         return {
           id: p.id,
           name: p.name,
-          category: isStaffPatrol ? "mixte" : p.category,
-          isChef: isStaffPatrol,
+          category: staffPatrol ? "staff" : p.category,
+          isChef: staffPatrol,
           members: members.length,
           km,
         };
@@ -1104,7 +1074,7 @@ function PatrolLeaderboardRow({
             </span>
             {isChef ? (
               <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-600 uppercase tracking-wider">
-                👑 Staff (Mixte : Homme & Femme)
+                👑 Staff (Garçons & Filles)
               </span>
             ) : (
               <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-secondary-foreground">

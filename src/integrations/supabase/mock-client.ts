@@ -78,7 +78,7 @@ class MockQueryBuilder {
         });
         inserted.push(act as unknown as AnyRow);
       } else if (this.table === "patrols") {
-        const cat = (rowItem["category"] as "homme" | "femme" | "mixte") || "homme";
+        const cat = (rowItem["category"] as "homme" | "femme" | "staff") || "homme";
         const p = db.addPatrol((rowItem["name"] as string) || "Nouvelle Patrouille", cat);
         inserted.push(p as unknown as AnyRow);
       } else if (this.table === "timeline") {

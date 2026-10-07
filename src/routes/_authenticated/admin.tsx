@@ -44,6 +44,7 @@ import {
 } from "@/lib/database";
 import { AdminUserList } from "@/components/AdminUserList";
 import { ExportDialog } from "@/components/ExportDialog";
+import { CATEGORY_LABELS, type PatrolCategory } from "@/lib/categories";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   ssr: false,
@@ -88,7 +89,7 @@ function Admin() {
   // New patrol form
   const [newPatrol, setNewPatrol] = useState({
     name: "",
-    category: "homme" as "homme" | "femme" | "mixte",
+    category: "homme" as "homme" | "femme" | "staff",
   });
 
   // Countdowns state
@@ -121,7 +122,7 @@ function Admin() {
     if (!hasStaffInDb && ptData && ptData.length > 0) {
       supabase
         .from("patrols")
-        .insert({ name: "Staff", category: "homme" })
+        .insert({ name: "Staff", category: "staff" })
         .then((res) => {
           if (!res.error) {
             supabase
@@ -262,7 +263,7 @@ function Admin() {
   const createPatrol = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPatrol.name.trim()) return;
-    const cat = newPatrol.category === "mixte" ? "homme" : newPatrol.category;
+    const cat = newPatrol.category;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res = (await (supabase.from("patrols") as any).insert({
       name: newPatrol.name.trim(),
@@ -822,7 +823,7 @@ function Admin() {
                     <Label>Catégorie</Label>
                     <Select
                       value={newPatrol.category}
-                      onValueChange={(v: "homme" | "femme" | "mixte") =>
+                      onValueChange={(v: "homme" | "femme" | "staff") =>
                         setNewPatrol({ ...newPatrol, category: v })
                       }
                     >
@@ -832,7 +833,7 @@ function Admin() {
                       <SelectContent>
                         <SelectItem value="homme">Garçons</SelectItem>
                         <SelectItem value="femme">Filles</SelectItem>
-                        <SelectItem value="mixte">👑 Chefs & Maîtrise</SelectItem>
+                        <SelectItem value="staff">👑 Chefs & Maîtrise</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -860,7 +861,7 @@ function Admin() {
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-sm text-foreground">{p.name}</span>
                             <Badge variant="secondary" className="text-[10px]">
-                              {p.category}
+                              {CATEGORY_LABELS[p.category as PatrolCategory] ?? p.category}
                             </Badge>
                           </div>
                           <span className="text-xs text-muted-foreground">

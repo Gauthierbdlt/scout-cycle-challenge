@@ -27,6 +27,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { isStaffPatrol, matchesCategory } from "@/lib/categories";
 
 export interface PatrolDailyContributionChartProps {
   className?: string;
@@ -214,7 +215,7 @@ export function PatrolDailyContributionChart({
       if (!hasStaff) {
         loadedPatrols = [
           ...loadedPatrols,
-          { id: "staff", name: "Staff", category: "mixte", created_at: new Date().toISOString() },
+          { id: "staff", name: "Staff", category: "staff", created_at: new Date().toISOString() },
         ];
       }
       setPatrols(loadedPatrols);
@@ -273,12 +274,8 @@ export function PatrolDailyContributionChart({
   // Patrouilles filtrées par catégorie
   const filteredPatrols = useMemo(() => {
     return patrols.filter((p) => {
-      const isStaff = p.category === "mixte" || p.name.toLowerCase().includes("staff");
-      if (categoryFilter === "all") return true;
-      if (categoryFilter === "staff") return isStaff;
-      if (categoryFilter === "homme") return p.category === "homme";
-      if (categoryFilter === "femme") return p.category === "femme";
-      return true;
+      // Les patrouilles staff apparaissent aussi chez les Garçons et les Filles
+      return matchesCategory(p.category, isStaffPatrol(p), categoryFilter);
     });
   }, [patrols, categoryFilter]);
 

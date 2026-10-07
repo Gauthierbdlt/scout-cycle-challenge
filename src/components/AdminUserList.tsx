@@ -27,6 +27,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { db, type Profile, type Patrol } from "@/lib/database";
 import { cn } from "@/lib/utils";
+import { isStaffPatrol } from "@/lib/categories";
 
 interface AdminUserListProps {
   profiles: Profile[];
@@ -486,7 +487,7 @@ export function AdminUserList({
                                   ? "Garçons"
                                   : pat.category === "femme"
                                     ? "Filles"
-                                    : "Mixte"}
+                                    : "Staff"}
                                 )
                               </SelectItem>
                             ))}
@@ -496,7 +497,7 @@ export function AdminUserList({
 
                       {/* Scout Year / Role status */}
                       <td className="py-3.5 px-4">
-                        {p.is_chef || currentPatrol?.name.toLowerCase().includes("staff") ? (
+                        {p.is_chef || isStaffPatrol(currentPatrol) ? (
                           <Badge className="bg-amber-500/15 text-amber-700 text-[10px] font-bold">
                             Chef / Staff
                           </Badge>
