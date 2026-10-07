@@ -14,6 +14,9 @@
 ## Architecture rules
 
 - Data access goes through the browser client with RLS; admin rights are enforced by `has_role` in policies. Why: simple app, security lives in the database.
-- Public leaderboard is served by the `leaderboard(_from,_to)` security-definer RPC exposing only names/patrols/km. Why: profiles (phones) stay private.
-- Activity status is set by a DB trigger (Strava link → approved, screenshot → pending). Why: users can't self-approve.
+- `profiles` is private (own row or admin). Public pages read the `profiles_public` view (no email/phone) or the `leaderboard(_from,_to)` RPC. Why: profiles (phones) stay private.
+- Activity status is set by the `set_activity_status` DB trigger (Strava link → approved, screenshot → pending; only admins may change it). Why: users can't self-approve.
+- `profiles.is_admin` mirrors `user_roles` (trigger) and cannot be changed by non-admins; policies use `has_role` only.
+- Storage `proofs`: files are named `<user_id>_<timestamp>.<ext>` or `proposed_<user_id>_…`; users manage only their own prefix, admins all.
+- DB changes go in `supabase/migrations/` and are tested locally with `supabase/tests/` before being applied.
 - Initial admin is granted by email in the `handle_new_user` trigger; further admins via `set_admin_by_email` RPC.

@@ -379,6 +379,12 @@ export function DailyDistanceForm({
         return;
       }
 
+      // Le statut final est décidé par la base (trigger set_activity_status).
+      const finalStatus: "approved" | "pending" =
+        createdData?.status === "approved" || createdData?.status === "pending"
+          ? createdData.status
+          : activityStatus;
+
       const localActivity = db.addActivity({
         id: createdData?.id,
         user_id: targetUserId,
@@ -389,7 +395,7 @@ export function DailyDistanceForm({
         gpx_path: gpxPublicUrl,
         sport,
         note: finalNote,
-        status: activityStatus,
+        status: finalStatus,
       });
 
       if (profile && selectedPatrolId) {
@@ -402,13 +408,13 @@ export function DailyDistanceForm({
           <p className="font-bold flex items-center gap-1.5 text-sm">
             <Sparkles className="h-4 w-4 text-amber-500" />
             {sportLabel}{" "}
-            {activityStatus === "approved" ? "validée avec succès !" : "enregistrée (en attente) !"}
+            {finalStatus === "approved" ? "validée avec succès !" : "enregistrée (en attente) !"}
           </p>
           <p className="text-xs text-muted-foreground">
             <strong>+{kmNumber} km</strong> ({sport === "course" ? "🏃 Course" : "🚴 Vélo"})
             attribués à la patrouille <strong>{patrolName}</strong> ({rideDate})
           </p>
-          {activityStatus === "pending" && (
+          {finalStatus === "pending" && (
             <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
               <Clock className="h-3 w-3" />
               En attente de validation par la maîtrise (photo jointe)
@@ -431,7 +437,7 @@ export function DailyDistanceForm({
           ride_date: rideDate,
           patrol_id: selectedPatrolId,
           patrol_name: patrolName,
-          status: activityStatus,
+          status: finalStatus,
           sport,
         });
       }

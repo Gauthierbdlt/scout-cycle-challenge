@@ -124,7 +124,7 @@ function Index() {
       // Direct aggregation from real Supabase profiles and activities with sport filtering
       try {
         const { data: realProfiles } = await supabase
-          .from("profiles")
+          .from("profiles_public")
           .select(
             "id, full_name, totem, quali, patrol_id, is_admin, scout_year, patrols(id, name, category)",
           );

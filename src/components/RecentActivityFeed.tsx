@@ -148,7 +148,7 @@ export function RecentActivityFeed({
 
         // 2. Récupérer les profils depuis Supabase
         const { data: profilesData } = await supabase
-          .from("profiles")
+          .from("profiles_public")
           .select("id, full_name, totem, quali, patrol_id");
 
         const profileMap = new Map<

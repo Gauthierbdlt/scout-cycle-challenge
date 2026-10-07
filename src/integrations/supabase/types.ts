@@ -143,7 +143,28 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      profiles_public: {
+        Row: {
+          created_at: string | null;
+          full_name: string | null;
+          id: string | null;
+          is_admin: boolean | null;
+          patrol_id: string | null;
+          quali: string | null;
+          scout_year: number | null;
+          strava_url: string | null;
+          totem: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "profiles_patrol_id_fkey";
+            columns: ["patrol_id"];
+            isOneToOne: false;
+            referencedRelation: "patrols";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Functions: {
       has_role: {
