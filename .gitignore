@@ -30,3 +30,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secrets locaux (copier .env.example vers .env)
+.env
+
+# Cache local du serveur de développement (les vraies données sont dans Supabase)
+data/
