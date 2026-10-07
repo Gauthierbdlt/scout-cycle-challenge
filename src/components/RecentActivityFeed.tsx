@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/lib/supabase";
+import { approveActivity } from "@/lib/proofStorage";
 import {
   db,
   type Patrol,
@@ -113,20 +114,14 @@ export function RecentActivityFeed({
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const handleQuickApprove = async (activityId: string) => {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase.from("activities") as any)
-        .update({ status: "approved" })
-        .eq("id", activityId);
-
-      if (error) throw error;
-      db.updateActivityStatus(activityId, "approved");
-      toast.success("Sortie validée avec succès !");
-      fetchActivities(true);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      toast.error("Erreur lors de la validation : " + msg);
+    const { error } = await approveActivity(activityId);
+    if (error) {
+      toast.error("Erreur lors de la validation : " + error);
+      return;
     }
+    db.updateActivityStatus(activityId, "approved");
+    toast.success("Sortie validée avec succès !");
+    fetchActivities(true);
   };
 
   const fetchActivities = useCallback(

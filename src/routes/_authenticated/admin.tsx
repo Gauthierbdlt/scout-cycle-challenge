@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/lib/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { approveActivity, rejectActivity } from "@/lib/proofStorage";
 import {
   db,
   type Patrol,
@@ -237,55 +238,22 @@ function Admin() {
   }
 
   const approveAct = async (act: Activity) => {
-    if (act.proof_path && act.proof_path.startsWith("http")) {
-      try {
-        const urlParts = act.proof_path.split("/");
-        const fileName = urlParts[urlParts.length - 1];
-        if (fileName) {
-          await supabase.storage.from("proofs").remove([fileName]);
-        }
-      } catch (err) {
-        console.warn("Erreur lors de la suppression du fichier de preuve :", err);
-      }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const res = (await (supabase.from("activities") as any)
-      .update({ status: "approved", proof_path: null })
-      .eq("id", act.id)) as { error: { message: string } | null };
-
-    db.updateActivityStatus(act.id, "approved");
-
-    if (res?.error) {
-      toast.error("Erreur : " + res.error.message);
+    const { error } = await approveActivity(act.id);
+    if (error) {
+      toast.error("Erreur : " + error);
     } else {
-      toast.success("Sortie validée et photo supprimée du stockage avec succès !");
+      db.updateActivityStatus(act.id, "approved");
+      toast.success("Sortie validée et photo de preuve supprimée.");
     }
     load();
   };
 
   const rejectAct = async (act: Activity) => {
-    if (act.proof_path) {
-      try {
-        const filePath = act.proof_path.split("/").pop();
-        if (filePath) {
-          await supabase.storage.from("proofs").remove([filePath]);
-        }
-      } catch (err) {
-        console.warn("Erreur suppression preuve :", err);
-      }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const res = (await (supabase.from("activities") as any)
-      .update({ status: "rejected" })
-      .eq("id", act.id)) as { error: { message: string } | null };
-
-    db.updateActivityStatus(act.id, "rejected");
-
-    if (res?.error) {
-      toast.error("Erreur : " + res.error.message);
+    const { error } = await rejectActivity(act.id);
+    if (error) {
+      toast.error("Erreur : " + error);
     } else {
+      db.updateActivityStatus(act.id, "rejected");
       toast.error("Sortie refusée.");
     }
     load();
