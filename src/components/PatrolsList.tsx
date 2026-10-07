@@ -230,7 +230,7 @@ export function PatrolsList({
             // Filtrage par date si nécessaire
             const filteredActivities = activitiesData.filter(
               (a: { ride_date: string; status: string }) => {
-                if (a.status === "rejected") return false;
+                if (a.status !== "approved") return false; // seules les sorties validées comptent
                 if (fromDate && a.ride_date < fromDate) return false;
                 if (toDate && a.ride_date > toDate) return false;
                 return true;

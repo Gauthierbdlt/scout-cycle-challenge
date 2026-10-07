@@ -339,7 +339,7 @@ export function PatrolDailyContributionChart({
 
     // 3. Agréger les kilomètres par date et patrouille
     activities.forEach((act) => {
-      if (act.status === "rejected") return;
+      if (act.status !== "approved") return; // seules les sorties validées comptent
 
       const actDate = act.ride_date ? act.ride_date.slice(0, 10) : "";
       const targetDay = days.find((d) => d.date === actDate);
