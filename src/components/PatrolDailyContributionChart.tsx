@@ -27,7 +27,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { isStaffPatrol, matchesCategory } from "@/lib/categories";
+import { isStaffPatrol, matchesCategory, TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
 
 export interface PatrolDailyContributionChartProps {
   className?: string;
@@ -215,7 +215,12 @@ export function PatrolDailyContributionChart({
       if (!hasStaff) {
         loadedPatrols = [
           ...loadedPatrols,
-          { id: "staff", name: "Staff", category: "staff", created_at: new Date().toISOString() },
+          {
+            id: "staff",
+            name: TROOP_STAFF_PATROL_NAME,
+            category: "staff",
+            created_at: new Date().toISOString(),
+          },
         ];
       }
       setPatrols(loadedPatrols);

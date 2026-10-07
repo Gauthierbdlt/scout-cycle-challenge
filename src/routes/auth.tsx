@@ -30,7 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import { db } from "@/lib/database";
-import { isStaffPatrol } from "@/lib/categories";
+import { isStaffPatrol, isTroopStaffPatrol, TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -102,7 +102,7 @@ function AuthPage() {
         (p) => p.name.toLowerCase().includes("staff") || p.name.toLowerCase().includes("chef"),
       );
       if (!hasStaff) {
-        list = [{ id: "staff", name: "Staff", category: "staff" }, ...list];
+        list = [{ id: "staff", name: TROOP_STAFF_PATROL_NAME, category: "staff" }, ...list];
       }
       setPatrols(list);
     }
@@ -221,9 +221,8 @@ function AuthPage() {
     const d = parsed.data;
 
     let targetPatrolId: string | null = d.patrol_id;
-    const staffPatrol = patrols.find(
-      (p) => p.name.toLowerCase().includes("staff") || p.name.toLowerCase().includes("chef"),
-    );
+    // « Staff » choisi à l'inscription = la patrouille Staff troupe
+    const staffPatrol = patrols.find((p) => isTroopStaffPatrol(p));
 
     if (targetPatrolId === "staff" || targetPatrolId === "patrol-staff") {
       targetPatrolId = staffPatrol?.id || null;

@@ -22,7 +22,12 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { isStaffPatrol, matchesCategory } from "@/lib/categories";
+import {
+  isStaffPatrol,
+  matchesCategory,
+  TROOP_STAFF_PATROL_NAME,
+  isTroopStaffPatrol,
+} from "@/lib/categories";
 
 export interface PatrolRecord {
   id: string;
@@ -145,7 +150,10 @@ export function PatrolsList({
         // S'assurer que le Staff est présent si jamais non configuré
         const hasStaff = fetchedPatrols.some((p) => isStaffPatrol(p));
         if (!hasStaff) {
-          fetchedPatrols = [...fetchedPatrols, { id: "staff", name: "Staff", category: "staff" }];
+          fetchedPatrols = [
+            ...fetchedPatrols,
+            { id: "staff", name: TROOP_STAFF_PATROL_NAME, category: "staff" },
+          ];
         }
         setPatrols(fetchedPatrols);
 
@@ -247,8 +255,7 @@ export function PatrolsList({
               const profile = userProfiles.get(uid);
               const patrolId = profile?.patrol_id;
               const matchedPatrol = fetchedPatrols.find(
-                (p) =>
-                  p.id === patrolId || (p.name.toLowerCase() === "staff" && patrolId === "staff"),
+                (p) => p.id === patrolId || (isTroopStaffPatrol(p) && patrolId === "staff"),
               );
               if (matchedPatrol) {
                 if (!statsMap[matchedPatrol.id]) statsMap[matchedPatrol.id] = [];
