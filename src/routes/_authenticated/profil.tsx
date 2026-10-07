@@ -16,6 +16,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import { db } from "@/lib/database";
+import { isTroopStaffPatrol, TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
 
 export const Route = createFileRoute("/_authenticated/profil")({
   ssr: false,
@@ -75,14 +76,14 @@ function Profil() {
         .from("patrols")
         .select("id, name, category")
         .order("name");
-      
+
       let list = pts && pts.length > 0 ? pts : db.getPatrols();
       if (
         !list.some(
           (p) => p.name.toLowerCase().includes("staff") || p.name.toLowerCase().includes("chef"),
         )
       ) {
-        list = [{ id: "staff", name: "Staff", category: "staff" }, ...list];
+        list = [{ id: "staff", name: TROOP_STAFF_PATROL_NAME, category: "staff" }, ...list];
       }
       if (active) {
         setPatrols(list);
@@ -144,7 +145,7 @@ function Profil() {
 
     let targetPatrolId: string | null = d.patrol_id;
     if (!targetPatrolId || d.patrol_id === "staff" || d.patrol_id.includes("staff")) {
-      const staffItem = patrols.find((p) => p.name.toLowerCase().includes("staff"));
+      const staffItem = patrols.find((p) => isTroopStaffPatrol(p));
       if (staffItem) {
         targetPatrolId = staffItem.id;
       }

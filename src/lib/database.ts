@@ -2,6 +2,8 @@
 // 100% independent of Lovable and external cloud dependencies.
 // Persists in localStorage with high-fidelity seed data and real-time subscriber events.
 
+import { TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
+
 export type PatrolCategory = "homme" | "femme" | "staff";
 
 export interface Patrol {
@@ -175,7 +177,7 @@ const STORAGE_KEY = "alezan_standalone_db_v2";
 const SEED_PATROLS: Patrol[] = [
   {
     id: "patrol-staff",
-    name: "Staff",
+    name: TROOP_STAFF_PATROL_NAME,
     category: "staff",
     created_at: "2026-09-01T00:00:00Z",
   },

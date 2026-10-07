@@ -31,7 +31,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { weekRange, useAuth } from "@/lib/useAuth";
 import { db, type Patrol, getActivitySport, type ActivitySport, getPatrolEmblem } from "@/lib/database";
 import { cn } from "@/lib/utils";
-import { isStaffPatrol, matchesCategory } from "@/lib/categories";
+import {
+  isStaffPatrol,
+  matchesCategory,
+  TROOP_STAFF_PATROL_NAME,
+  isTroopStaffPatrol,
+} from "@/lib/categories";
 import { computeJerseys } from "@/lib/jerseys";
 import { JerseysPanel } from "@/components/JerseysPanel";
 import { ScoutSportifCard } from "@/components/ScoutSportifCard";
@@ -208,7 +213,8 @@ function Index() {
               quali: p.quali,
               full_name: p.full_name,
               patrol_id: p.patrol_id || "",
-              patrol_name: pt?.name || (isStaffOrChef ? "Staff" : "Sans patrouille"),
+              patrol_name:
+                pt?.name || (isStaffOrChef ? TROOP_STAFF_PATROL_NAME : "Sans patrouille"),
               category: isStaffOrChef ? "staff" : (pt?.category as "homme" | "femme") || "homme",
               km: Number(totalKm.toFixed(1)),
               dplus: Math.round(totalDplus),
@@ -273,7 +279,7 @@ function Index() {
       : [
           {
             id: "staff",
-            name: "Staff",
+            name: TROOP_STAFF_PATROL_NAME,
             category: "homme" as const,
             created_at: new Date().toISOString(),
           },
@@ -290,8 +296,8 @@ function Index() {
         const staffPatrol = isStaffPatrol(p);
 
         // Membres de la patrouille. Les animateurs sans patrouille sont rattachés
-        // à la patrouille « Staff » (et pas à chacune des patrouilles staff).
-        const isMainStaffPatrol = staffPatrol && p.name?.toLowerCase().includes("staff");
+        // à la patrouille « Staff troupe » (et pas à chacune des patrouilles staff).
+        const isMainStaffPatrol = staffPatrol && (isTroopStaffPatrol(p) || p.id === "staff");
         const members = Array.isArray(filteredScouts)
           ? filteredScouts.filter((r) => {
               if (!r) return false;

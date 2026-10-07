@@ -17,6 +17,18 @@ export const CATEGORY_LABELS: Record<PatrolCategory, string> = {
   staff: "Staff",
 };
 
+/**
+ * Nom de la patrouille des animateurs de la troupe, pour la distinguer des
+ * autres staffs (Baladins, Waingunga, ...). Elle reste dans la catégorie « staff ».
+ */
+export const TROOP_STAFF_PATROL_NAME = "Staff troupe";
+
+/** La patrouille est-elle le staff de la troupe (et pas un autre staff) ? */
+export function isTroopStaffPatrol(p: { name?: string | null } | null | undefined): boolean {
+  const n = (p?.name || "").trim().toLowerCase();
+  return n === "staff troupe" || n === "staff";
+}
+
 type PatrolLike = { name?: string | null; category?: string | null } | null | undefined;
 
 /** La patrouille est-elle une patrouille staff ? */

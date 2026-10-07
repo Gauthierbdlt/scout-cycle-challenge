@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
 
 export interface CyclistProfile {
   id: string;
@@ -152,7 +153,11 @@ export function Leaderboard({ className }: { className?: string }) {
 
     const list: RankedCyclist[] = data.profiles.map((profile) => {
       const patrol = profile.patrol_id ? patrolsMap.get(profile.patrol_id) : undefined;
-      const patrolName = patrol ? patrol.name : profile.is_chef ? "Staff" : "Indépendant";
+      const patrolName = patrol
+        ? patrol.name
+        : profile.is_chef
+          ? TROOP_STAFF_PATROL_NAME
+          : "Indépendant";
       const patrolCategory = patrol ? patrol.category : profile.is_chef ? "staff" : "homme";
 
       // Filter cyclist rides by current date range and valid status

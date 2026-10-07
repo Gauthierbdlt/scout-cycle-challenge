@@ -28,7 +28,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/useAuth";
 import { cn } from "@/lib/utils";
-import { isStaffPatrol } from "@/lib/categories";
+import { isStaffPatrol, TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
 
 export interface RecentActivityItem {
   id: string;
@@ -206,7 +206,7 @@ export function RecentActivityFeed({
             displayName = `${prof.totem} ${prof.quali}`;
           }
 
-          const patrolName = patrol ? patrol.name : "Staff";
+          const patrolName = patrol ? patrol.name : TROOP_STAFF_PATROL_NAME;
           const patrolCategory = patrol ? patrol.category : "staff";
 
           const timestampToUse = act.created_at || act.ride_date;

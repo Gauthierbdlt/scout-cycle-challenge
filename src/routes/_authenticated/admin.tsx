@@ -44,7 +44,7 @@ import {
 } from "@/lib/database";
 import { AdminUserList } from "@/components/AdminUserList";
 import { ExportDialog } from "@/components/ExportDialog";
-import { CATEGORY_LABELS, type PatrolCategory } from "@/lib/categories";
+import { CATEGORY_LABELS, type PatrolCategory, TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
 import { ScoutSportifAdmin, type SportifBadge } from "@/components/ScoutSportifAdmin";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -114,7 +114,7 @@ function Admin() {
     if (!hasStaffInDb && ptData && ptData.length > 0) {
       supabase
         .from("patrols")
-        .insert({ name: "Staff", category: "staff" })
+        .insert({ name: TROOP_STAFF_PATROL_NAME, category: "staff" })
         .then((res) => {
           if (!res.error) {
             supabase

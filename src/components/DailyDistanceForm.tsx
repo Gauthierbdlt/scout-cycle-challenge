@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { isStaffPatrol } from "@/lib/categories";
+import { isStaffPatrol, TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
 
 export interface DailyDistanceFormProps {
   /** Callback fired after a successful submission */
@@ -170,7 +170,7 @@ export function DailyDistanceForm({
           ...list,
           {
             id: "staff",
-            name: "Staff",
+            name: TROOP_STAFF_PATROL_NAME,
             category: "staff",
             created_at: new Date().toISOString(),
           },
