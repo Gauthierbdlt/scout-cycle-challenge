@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import { removeStorageFiles } from "@/lib/proofStorage";
 import { useAuth } from "@/lib/useAuth";
 import { db, type Patrol, type ActivitySport, getPatrolEmblem } from "@/lib/database";
 import { Button } from "@/components/ui/button";
@@ -373,6 +374,8 @@ export function DailyDistanceForm({
         .single();
 
       if (insertError) {
+        // La sortie n'a pas été créée : ne pas laisser de fichiers orphelins
+        await removeStorageFiles([proofPublicUrl, gpxPublicUrl]);
         console.error("Erreur insertion activités Supabase :", insertError);
         toast.error("Erreur Supabase : " + insertError.message);
         setSubmitting(false);

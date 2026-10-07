@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DailyDistanceForm } from "@/components/DailyDistanceForm";
 import { supabase } from "@/integrations/supabase/client";
+import { deleteActivity as deleteActivityWithFiles } from "@/lib/proofStorage";
 import {
   db,
   type Profile,
@@ -131,13 +132,11 @@ function MesKm() {
 
   const remove = async (a: Act) => {
     if (confirm("Supprimer cette sortie de ton historique ?")) {
-      const res = (await supabase.from("activities").delete().eq("id", a.id)) as {
-        error: { message: string } | null;
-      };
-      db.deleteActivity(a.id);
-      if (res?.error) {
-        toast.error("Erreur : " + res.error.message);
+      const { error } = await deleteActivityWithFiles(a.id);
+      if (error) {
+        toast.error("Erreur : " + error);
       } else {
+        db.deleteActivity(a.id);
         toast.success("Sortie supprimée");
       }
       load();
