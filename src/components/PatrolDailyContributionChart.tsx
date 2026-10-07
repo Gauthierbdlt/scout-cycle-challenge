@@ -233,7 +233,7 @@ export function PatrolDailyContributionChart({
 
       // 4. Charger les profils pour faire la liaison user_id -> patrol_id
       const { data: profsData } = await supabase
-        .from("profiles")
+        .from("profiles_public")
         .select("id, patrol_id, full_name, totem");
 
       const loadedActivities = (actsData as RawActivity[]) || [];

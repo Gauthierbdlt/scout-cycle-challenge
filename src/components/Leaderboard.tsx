@@ -22,7 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface CyclistProfile {
   id: string;
-  email: string | null;
+  email?: string | null;
   full_name: string | null;
   totem: string | null;
   quali: string | null;
@@ -107,10 +107,8 @@ export function Leaderboard({ className }: { className?: string }) {
     try {
       const [pRes, aRes, patRes] = await Promise.all([
         supabase
-          .from("profiles")
-          .select(
-            "id, email, full_name, totem, quali, scout_year, patrol_id, is_admin, strava_url",
-          ),
+          .from("profiles_public")
+          .select("id, full_name, totem, quali, scout_year, patrol_id, is_admin, strava_url"),
         supabase.from("activities").select("id, user_id, ride_date, km, status, strava_link, note"),
         supabase.from("patrols").select("id, name, category"),
       ]);

@@ -213,7 +213,7 @@ export function PatrolsList({
             .select("id, user_id, km, ride_date, status");
 
           const { data: profilesData } = await supabase
-            .from("profiles")
+            .from("profiles_public")
             .select("id, full_name, totem, patrol_id");
 
           if (Array.isArray(activitiesData) && activitiesData.length > 0) {
