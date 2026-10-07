@@ -126,6 +126,39 @@ export type Database = {
           },
         ];
       };
+      weekly_badges: {
+        Row: {
+          awarded_date: string;
+          badge_title: string;
+          category: string | null;
+          created_at: string | null;
+          id: string;
+          km: number | null;
+          user_id: string;
+          week_start: string | null;
+        };
+        Insert: {
+          awarded_date?: string;
+          badge_title: string;
+          category?: string | null;
+          created_at?: string | null;
+          id?: string;
+          km?: number | null;
+          user_id: string;
+          week_start?: string | null;
+        };
+        Update: {
+          awarded_date?: string;
+          badge_title?: string;
+          category?: string | null;
+          created_at?: string | null;
+          id?: string;
+          km?: number | null;
+          user_id?: string;
+          week_start?: string | null;
+        };
+        Relationships: [];
+      };
       user_roles: {
         Row: {
           id: string;
