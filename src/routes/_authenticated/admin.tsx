@@ -45,6 +45,7 @@ import {
 import { AdminUserList } from "@/components/AdminUserList";
 import { ExportDialog } from "@/components/ExportDialog";
 import { CATEGORY_LABELS, type PatrolCategory } from "@/lib/categories";
+import { ScoutSportifAdmin, type SportifBadge } from "@/components/ScoutSportifAdmin";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   ssr: false,
@@ -70,13 +71,6 @@ type CountdownItem = {
   is_active: boolean;
 };
 
-type WeeklyBadge = {
-  id: string;
-  user_id: string;
-  badge_title: string;
-  awarded_date: string;
-  profiles?: { full_name: string; totem: string | null };
-};
 
 function Admin() {
   const { isAdmin, loading, user } = useAuth();
@@ -101,9 +95,7 @@ function Admin() {
   const [cdActive, setCdActive] = useState(false);
 
   // Badges state
-  const [weeklyBadges, setWeeklyBadges] = useState<WeeklyBadge[]>([]);
-  const [selectedBadgeScout, setSelectedBadgeScout] = useState("");
-  const [badgeTitleInput, setBadgeTitleInput] = useState("Coureur de la semaine 🏆");
+  const [weeklyBadges, setWeeklyBadges] = useState<SportifBadge[]>([]);
 
   // Export PDF
   const [exportModalOpen, setExportModalOpen] = useState(false);
@@ -152,11 +144,12 @@ function Admin() {
     setPending(actData || []);
 
     // 4. Badges history
-    const { data: bgData } = await supabase
-      .from("weekly_badges")
-      .select("*, profiles(full_name, totem)")
+    // (pas de jointure : weekly_badges.user_id pointe vers auth.users, pas vers profiles)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: bgData } = await (supabase.from("weekly_badges") as any)
+      .select("*")
       .order("awarded_date", { ascending: false });
-    if (bgData) setWeeklyBadges(bgData as unknown as WeeklyBadge[]);
+    setWeeklyBadges((bgData as SportifBadge[] | null) ?? []);
 
     // 5. Admins
     const { data: rolesData } = (await supabase
@@ -354,43 +347,6 @@ function Admin() {
     load();
   };
 
-  // Attribuer un badge à un scout
-  const handleAwardBadge = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedBadgeScout) {
-      toast.error("Veuillez sélectionner un scout.");
-      return;
-    }
-
-    const { error } = await supabase.from("weekly_badges").insert({
-      user_id: selectedBadgeScout,
-      badge_title: badgeTitleInput.trim() || "Coureur de la semaine 🏆",
-      awarded_date: new Date().toISOString().slice(0, 10),
-    });
-
-    if (error) {
-      toast.error("Erreur : " + error.message);
-    } else {
-      toast.success("Badge attribué avec succès ! Ce coureur est désormais exclu du classement des badges.");
-      setSelectedBadgeScout("");
-      load();
-    }
-  };
-
-  const handleDeleteBadge = async (id: string) => {
-    if (confirm("Retirer ce badge ?")) {
-      const { error } = await supabase.from("weekly_badges").delete().eq("id", id);
-      if (!error) {
-        toast.success("Badge supprimé.");
-        load();
-      }
-    }
-  };
-
-  // Scouts éligibles (n'ayant pas encore reçu de badge)
-  const awardedUserIds = weeklyBadges.map((b) => b.user_id);
-  const eligibleScouts = profiles.filter((p) => !awardedUserIds.includes(p.id));
-
   return (
     <div className="min-h-screen bg-background">
       <main className="mx-auto max-w-6xl px-4 py-8 md:py-12 space-y-8">
@@ -425,7 +381,7 @@ function Admin() {
             </TabsTrigger>
             <TabsTrigger value="badges" className="rounded-lg text-xs font-bold gap-1.5">
               <Award className="h-4 w-4" />
-              Badges ({weeklyBadges.length})
+              Scout sportif ({weeklyBadges.filter((b) => b.week_start).length})
             </TabsTrigger>
             <TabsTrigger value="countdown" className="rounded-lg text-xs font-bold gap-1.5">
               <Clock className="h-4 w-4" />
@@ -546,103 +502,14 @@ function Admin() {
             )}
           </TabsContent>
 
-          {/* Tab 2: Weekly Badges */}
+          {/* Tab 2: Scout sportif de la semaine */}
           <TabsContent value="badges" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
-                <div className="flex items-center gap-2 border-b pb-4">
-                  <Award className="h-5 w-5 text-amber-500" />
-                  <div>
-                    <h2 className="font-display text-lg font-bold text-foreground">
-                      Attribuer un badge de la semaine
-                    </h2>
-                    <p className="text-xs text-muted-foreground">
-                      Le coureur sélectionné recevra son badge et sera exclu des futurs classements de badges.
-                    </p>
-                  </div>
-                </div>
-
-                <form onSubmit={handleAwardBadge} className="mt-4 space-y-4">
-                  <div>
-                    <Label htmlFor="badge-title">Titre du badge / Distinction</Label>
-                    <Input
-                      id="badge-title"
-                      value={badgeTitleInput}
-                      onChange={(e) => setBadgeTitleInput(e.target.value)}
-                      placeholder="Ex: Coureur de la semaine 🏆"
-                      required
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="scout-select">Sélectionner un coureur éligible</Label>
-                    <Select value={selectedBadgeScout} onValueChange={setSelectedBadgeScout}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Choisir un scout..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {eligibleScouts.length === 0 ? (
-                          <SelectItem value="none" disabled>Tous les scouts ont déjà un badge !</SelectItem>
-                        ) : (
-                          eligibleScouts.map((s) => (
-                            <SelectItem key={s.id} value={s.id}>
-                              {s.totem ? `${s.totem} (${s.full_name})` : s.full_name || s.email}
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <Button type="submit" className="w-full font-bold bg-amber-500 hover:bg-amber-600 text-amber-950">
-                    <Award className="mr-2 h-4 w-4" /> Attribuer le badge unique
-                  </Button>
-                </form>
-              </div>
-
-              <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-foreground border-b pb-3 flex items-center justify-between">
-                  <span>Historique des badges ({weeklyBadges.length})</span>
-                </h2>
-
-                <div className="mt-4 space-y-3 max-h-[400px] overflow-y-auto pr-1">
-                  {weeklyBadges.length === 0 ? (
-                    <p className="text-xs text-muted-foreground text-center py-6">Aucun badge attribué pour le moment.</p>
-                  ) : (
-                    weeklyBadges.map((b) => {
-                      const scoutName = b.profiles?.totem ? `${b.profiles.totem} (${b.profiles.full_name})` : b.profiles?.full_name || "Scout";
-                      return (
-                        <div
-                          key={b.id}
-                          className="flex items-center justify-between rounded-xl border p-3 bg-muted/20 hover:bg-muted/40 transition"
-                        >
-                          <div className="space-y-0.5 pr-2">
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-xs text-foreground flex items-center gap-1">
-                                🏅 {b.badge_title}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground">
-                              Attribué à <strong className="text-foreground">{scoutName}</strong> le {new Date(b.awarded_date).toLocaleDateString("fr-FR")}
-                            </p>
-                          </div>
-
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
-                            onClick={() => handleDeleteBadge(b.id)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-            </div>
+            <ScoutSportifAdmin
+              profiles={profiles}
+              patrols={patrols}
+              badges={weeklyBadges}
+              onChanged={load}
+            />
           </TabsContent>
 
           {/* Tab 3: Countdowns Management */}

@@ -34,6 +34,7 @@ import { cn } from "@/lib/utils";
 import { isStaffPatrol, matchesCategory } from "@/lib/categories";
 import { computeJerseys } from "@/lib/jerseys";
 import { JerseysPanel } from "@/components/JerseysPanel";
+import { ScoutSportifCard } from "@/components/ScoutSportifCard";
 
 interface LeaderboardItem {
   user_id: string;
@@ -780,6 +781,9 @@ function Index() {
                 : "Depuis le début"
           }
         />
+
+        {/* Scout sportif de la semaine (affiché dès qu'un premier lauréat est désigné) */}
+        <ScoutSportifCard />
 
         {/* View Switcher: Patrouilles vs Individuel vs Tendances Graphique */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-2 gap-3">
