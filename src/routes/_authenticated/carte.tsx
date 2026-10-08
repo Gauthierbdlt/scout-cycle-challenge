@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/useAuth";
+import { gpxDownloadUrl, gpxFileName } from "@/lib/gpxDownload";
 import {
   MapPin,
   Shield,
@@ -10,6 +11,7 @@ import {
   Upload,
   Trash2,
   Navigation,
+  Download,
   Lock,
   LogIn,
   Footprints,
@@ -756,6 +758,22 @@ function MapPage() {
                             title="Centrer la carte"
                           >
                             <Navigation className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            asChild
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-emerald-600 hover:bg-emerald-500/10"
+                            title="Télécharger le fichier GPX"
+                          >
+                            <a
+                              href={gpxDownloadUrl(item.gpx_url, item.title)}
+                              download={gpxFileName(item.title)}
+                              onClick={(e) => e.stopPropagation()}
+                              aria-label={`Télécharger le GPX : ${item.title}`}
+                            >
+                              <Download className="h-4 w-4" />
+                            </a>
                           </Button>
                           {isProposed && user?.id && (
                             <Button
