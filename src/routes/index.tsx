@@ -140,7 +140,7 @@ function Index() {
           );
 
         const { data: realActs } = await supabase
-          .from("activities")
+          .from("activities_public")
           .select("user_id, km, elevation_m, ride_date, status, note");
 
         type ProfileWithPatrol = {

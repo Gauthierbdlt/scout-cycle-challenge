@@ -179,6 +179,19 @@ export type Database = {
       };
     };
     Views: {
+      activities_public: {
+        Row: {
+          created_at: string | null;
+          elevation_m: number | null;
+          id: string | null;
+          km: number | null;
+          note: string | null;
+          ride_date: string | null;
+          status: Database["public"]["Enums"]["activity_status"] | null;
+          user_id: string | null;
+        };
+        Relationships: [];
+      };
       profiles_public: {
         Row: {
           created_at: string | null;
@@ -203,6 +216,10 @@ export type Database = {
       };
     };
     Functions: {
+      admin_set_password: {
+        Args: { _user_id: string; _password: string };
+        Returns: undefined;
+      };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];

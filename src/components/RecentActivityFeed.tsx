@@ -108,7 +108,7 @@ export function RecentActivityFeed({
   compact = false,
   className,
 }: RecentActivityFeedProps) {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const [activities, setActivities] = useState<RecentActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -159,11 +159,21 @@ export function RecentActivityFeed({
         (profilesData || []).forEach((p) => profileMap.set(p.id, p));
 
         // 3. Récupérer les activités réelles depuis Supabase
-        const { data: actsData } = await supabase
-          .from("activities")
-          .select("id, user_id, km, ride_date, created_at, strava_link, proof_path, note, status")
-          .order("created_at", { ascending: false })
-          .limit(limit * 2);
+        // Visiteur sans compte : vue publique (ni lien Strava, ni photo, ni note libre).
+        // Membre connecté : détail complet.
+        const { data: actsData } = user
+          ? await supabase
+              .from("activities")
+              .select(
+                "id, user_id, km, ride_date, created_at, strava_link, proof_path, note, status",
+              )
+              .order("created_at", { ascending: false })
+              .limit(limit * 2)
+          : await supabase
+              .from("activities_public")
+              .select("id, user_id, km, ride_date, created_at, note, status")
+              .order("created_at", { ascending: false })
+              .limit(limit * 2);
 
         // Activités réelles dédupliquées par ID
         const combined = new Map<
@@ -240,7 +250,7 @@ export function RecentActivityFeed({
         setRefreshing(false);
       }
     },
-    [limit],
+    [limit, user],
   );
 
   useEffect(() => {

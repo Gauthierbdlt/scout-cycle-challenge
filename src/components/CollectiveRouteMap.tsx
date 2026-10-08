@@ -72,7 +72,7 @@ export function CollectiveRouteMap({ className, overrideKm }: CollectiveRouteMap
           return;
         }
 
-        const { data: actsData } = await supabase.from("activities").select("km, status");
+        const { data: actsData } = await supabase.from("activities_public").select("km, status");
 
         let kmSum = 0;
         if (actsData && actsData.length > 0) {

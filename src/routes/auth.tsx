@@ -30,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import { db } from "@/lib/database";
+import { ForgotPassword } from "@/components/ForgotPassword";
 import { isStaffPatrol, isTroopStaffPatrol, TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
 
 export const Route = createFileRoute("/auth")({
@@ -447,6 +448,9 @@ function AuthPage() {
                       required
                       autoComplete="current-password"
                     />
+                    <div className="pt-1 text-right">
+                      <ForgotPassword initialEmail={loginEmail} />
+                    </div>
                   </div>
 
                   <Button

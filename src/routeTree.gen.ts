@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as NouveauMotDePasseRouteImport } from './routes/nouveau-mot-de-passe'
 import { Route as SolidariteRouteImport } from './routes/solidarite'
 import { Route as TimelineRouteImport } from './routes/timeline'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -31,6 +32,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NouveauMotDePasseRoute = NouveauMotDePasseRouteImport.update({
+  id: '/nouveau-mot-de-passe',
+  path: '/nouveau-mot-de-passe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SolidariteRoute = SolidariteRouteImport.update({
@@ -67,6 +73,7 @@ const AuthenticatedProfilRoute = AuthenticatedProfilRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/nouveau-mot-de-passe': typeof NouveauMotDePasseRoute
   '/solidarite': typeof SolidariteRoute
   '/timeline': typeof TimelineRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -77,6 +84,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/nouveau-mot-de-passe': typeof NouveauMotDePasseRoute
   '/solidarite': typeof SolidariteRoute
   '/timeline': typeof TimelineRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/nouveau-mot-de-passe': typeof NouveauMotDePasseRoute
   '/solidarite': typeof SolidariteRoute
   '/timeline': typeof TimelineRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/nouveau-mot-de-passe'
     | '/solidarite'
     | '/timeline'
     | '/admin'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/nouveau-mot-de-passe'
     | '/solidarite'
     | '/timeline'
     | '/admin'
@@ -122,6 +133,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/nouveau-mot-de-passe'
     | '/solidarite'
     | '/timeline'
     | '/_authenticated/admin'
@@ -134,6 +146,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  NouveauMotDePasseRoute: typeof NouveauMotDePasseRoute
   SolidariteRoute: typeof SolidariteRoute
   TimelineRoute: typeof TimelineRoute
 }
@@ -159,6 +172,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nouveau-mot-de-passe': {
+      id: '/nouveau-mot-de-passe'
+      path: '/nouveau-mot-de-passe'
+      fullPath: '/nouveau-mot-de-passe'
+      preLoaderRoute: typeof NouveauMotDePasseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/solidarite': {
@@ -227,6 +247,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  NouveauMotDePasseRoute: NouveauMotDePasseRoute,
   SolidariteRoute: SolidariteRoute,
   TimelineRoute: TimelineRoute,
 }
