@@ -155,6 +155,13 @@ function RootComponent() {
         <SiteHeader />
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
+        <footer className="py-4 text-center text-[10px] text-muted-foreground/70">
+          Version {__APP_VERSION__} · mise en ligne le{" "}
+          {new Date(__APP_BUILT_AT__).toLocaleString("fr-BE", {
+            dateStyle: "short",
+            timeStyle: "short",
+          })}
+        </footer>
         <Toaster />
       </AuthProvider>
     </QueryClientProvider>
