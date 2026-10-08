@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DailyDistanceForm } from "@/components/DailyDistanceForm";
 import { supabase } from "@/integrations/supabase/client";
+import { gpxDownloadUrl, gpxFileName } from "@/lib/gpxDownload";
 import { deleteActivity as deleteActivityWithFiles } from "@/lib/proofStorage";
 import {
   db,
@@ -395,13 +396,22 @@ function MesKm() {
 
                             {/* GPX badge if attached */}
                             {a.gpx_path && (
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] border-cyan-400/40 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 gap-1"
+                              <a
+                                href={gpxDownloadUrl(
+                                  a.gpx_path,
+                                  `sortie ${a.ride_date} ${a.km} km`,
+                                )}
+                                download={gpxFileName(`sortie ${a.ride_date} ${a.km} km`)}
+                                title="Télécharger le tracé GPX"
                               >
-                                <MapPin className="h-2.5 w-2.5" />
-                                <span>Tracé GPX</span>
-                              </Badge>
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] border-cyan-400/40 bg-cyan-500/10 text-cyan-700 hover:bg-cyan-500/20 dark:text-cyan-300 gap-1 cursor-pointer"
+                                >
+                                  <MapPin className="h-2.5 w-2.5" />
+                                  <span>Tracé GPX ⤓</span>
+                                </Badge>
+                              </a>
                             )}
                           </div>
 
