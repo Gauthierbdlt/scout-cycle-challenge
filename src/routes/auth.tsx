@@ -569,14 +569,11 @@ function AuthPage() {
                         </SelectTrigger>
                         <SelectContent>
                           {patrols.map((p) => {
-                            const isStaff =
-                              p.name.toLowerCase().includes("staff") ||
-                              p.name.toLowerCase().includes("chef") ||
-                              p.category === "staff";
+                            const isStaff = isStaffPatrol(p);
                             return (
                               <SelectItem key={p.id} value={p.id}>
                                 {isStaff
-                                  ? "👑 Staff"
+                                  ? `👑 ${p.name} (Staff)`
                                   : `${p.name} (${p.category === "femme" ? "Guide / F" : "Scout / H"})`}
                               </SelectItem>
                             );
