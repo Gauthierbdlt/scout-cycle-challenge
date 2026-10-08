@@ -101,7 +101,7 @@ export function SiteHeader() {
     {
       to: "/admin",
       label: "Admin",
-      description: "Panneau de modération et gestion de la maîtrise",
+      description: "Panneau de modération et gestion du staff",
       icon: Shield,
       iconColor: "text-amber-300",
       bgColor: "bg-amber-500/15",

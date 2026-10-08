@@ -513,7 +513,7 @@ export function Leaderboard({ className }: { className?: string }) {
                   </Badge>
                   {top3[0].isChef && (
                     <Badge variant="secondary" className="text-[10px]">
-                      Maîtrise
+                      Staff
                     </Badge>
                   )}
                   {top3[0].scoutYear && (

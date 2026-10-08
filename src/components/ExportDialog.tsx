@@ -313,7 +313,7 @@ export function ExportDialog({ open, onOpenChange, patrols }: Props) {
               </div>
               <p className="pt-1 text-[11px] text-muted-foreground">
                 Email et téléphone sont des données personnelles : ne diffuse pas ce PDF en dehors de
-                la maîtrise.
+                le staff.
               </p>
             </div>
           )}
