@@ -40,6 +40,8 @@ import {
 import { computeJerseys } from "@/lib/jerseys";
 import { JerseysPanel } from "@/components/JerseysPanel";
 import { ScoutSportifCard } from "@/components/ScoutSportifCard";
+import { PelotonPanel } from "@/components/PelotonPanel";
+import { computePeloton, type PelotonUserScore } from "@/lib/peloton";
 
 interface LeaderboardItem {
   user_id: string;
@@ -54,6 +56,7 @@ interface LeaderboardItem {
   dplus: number;
   scout_year?: number | null;
   is_chef?: boolean;
+  peloton?: PelotonUserScore | undefined;
 }
 
 export const Route = createFileRoute("/")({
@@ -120,7 +123,7 @@ function Index() {
   const [period, setPeriod] = useState<Period>("week");
   const [cat, setCat] = useState<GenderCat>("all");
   const [scoutYear, setScoutYear] = useState<ScoutYearFilter>("all");
-  const [view, setView] = useState<"patrols" | "scouts" | "map" | "chart">("patrols");
+  const [view, setView] = useState<"patrols" | "scouts" | "peloton" | "map" | "chart">("patrols");
   const [scoutSearch, setScoutSearch] = useState("");
   const [pendingKm, setPendingKm] = useState(0);
 
@@ -141,7 +144,7 @@ function Index() {
 
         const { data: realActs } = await supabase
           .from("activities_public")
-          .select("user_id, km, elevation_m, ride_date, status, note");
+          .select("user_id, km, elevation_m, ride_date, status, note, group_ride_id");
 
         type ProfileWithPatrol = {
           id: string;
@@ -160,6 +163,7 @@ function Index() {
           ride_date: string;
           status: string;
           note?: string | null;
+          group_ride_id?: string | null;
         };
 
         const acts = (realActs as unknown as ActItem[]) || [];
@@ -177,6 +181,18 @@ function Index() {
         });
         const sumPending = pendingForSport.reduce((acc, curr) => acc + Number(curr.km || 0), 0);
         setPendingKm(Number(sumPending.toFixed(1)));
+
+        // Classement Peloton : sorties à plusieurs de la période et du sport choisis
+        const peloton = computePeloton(
+          acts.filter((a) => {
+            if (range?.from && a.ride_date < range.from) return false;
+            if (range?.to && a.ride_date > range.to) return false;
+            const sport = getActivitySport(a);
+            if (sportMode === "velo" && sport !== "velo") return false;
+            if (sportMode === "course" && sport !== "course") return false;
+            return true;
+          }),
+        );
 
         const items: LeaderboardItem[] = profs
           .map((p) => {
@@ -222,6 +238,7 @@ function Index() {
               dplus: Math.round(totalDplus),
               scout_year: p.scout_year ?? undefined,
               is_chef: isStaffOrChef,
+              peloton: peloton.get(p.id),
             };
           })
           .sort((a, b) => b.km - a.km);
@@ -313,6 +330,7 @@ function Index() {
             })
           : [];
         const km = members.reduce((s, r) => s + Number(r?.km || 0), 0);
+        const pelotonPoints = members.reduce((s, r) => s + (r?.peloton?.points || 0), 0);
         return {
           id: p.id,
           name: p.name,
@@ -320,6 +338,7 @@ function Index() {
           isChef: staffPatrol,
           members: members.length,
           km,
+          pelotonPoints: Math.round(pelotonPoints * 10) / 10,
         };
       })
       .sort((a, b) => b.km - a.km);
@@ -842,6 +861,18 @@ function Index() {
               </span>
             </button>
             <button
+              onClick={() => setView("peloton")}
+              className={cn(
+                "relative pb-3 font-display text-base sm:text-xl font-bold transition-all whitespace-nowrap flex items-center gap-1.5",
+                view === "peloton"
+                  ? "text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-1 after:rounded-full after:bg-primary"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <Users className="h-4 w-4 text-orange-500" />
+              <span>Peloton</span>
+            </button>
+            <button
               onClick={() => setView("chart")}
               className={cn(
                 "relative pb-3 font-display text-base sm:text-xl font-bold transition-all whitespace-nowrap flex items-center gap-1.5",
@@ -882,6 +913,8 @@ function Index() {
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
             <p className="mt-3 text-sm text-muted-foreground">Calcul des kilomètres en cours…</p>
           </div>
+        ) : view === "peloton" ? (
+          <PelotonPanel scouts={filteredScouts} patrols={patrolRows} sportMode={sportMode} />
         ) : view === "patrols" ? (
           <div className="space-y-3">
             {rankedPatrols.length === 0 ? (
