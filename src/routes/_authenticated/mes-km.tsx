@@ -13,10 +13,12 @@ import {
   Award,
   Footprints,
   MapPin,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DailyDistanceForm } from "@/components/DailyDistanceForm";
+import { groupSizes, pelotonMultiplier, type PelotonActivity } from "@/lib/peloton";
 import { supabase } from "@/integrations/supabase/client";
 import { gpxDownloadUrl, gpxFileName } from "@/lib/gpxDownload";
 import { deleteActivity as deleteActivityWithFiles } from "@/lib/proofStorage";
@@ -59,6 +61,7 @@ type Act = {
   proof_path: string | null;
   gpx_path?: string | null;
   note?: string | null;
+  group_ride_id?: string | null;
   created_at: string;
 };
 
@@ -74,6 +77,7 @@ function MesKm() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [patrolMap, setPatrolMap] = useState<Record<string, string>>({});
   const [sportFilter, setSportFilter] = useState<"all" | "velo" | "course">("all");
+  const [pelotonSizes, setPelotonSizes] = useState<Map<string, number>>(new Map());
 
   const load = useCallback(async () => {
     // 1. Load user profile from Supabase
@@ -121,7 +125,21 @@ function MesKm() {
         .eq("user_id", user.id)
         .order("ride_date", { ascending: false })) as { data: Act[] | null };
 
-      setActs(res?.data || []);
+      const list = res?.data || [];
+      setActs(list);
+
+      // Taille des sorties à plusieurs (classement Peloton)
+      const groupIds = [...new Set(list.map((a) => a.group_ride_id).filter(Boolean))] as string[];
+      if (groupIds.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: linked } = (await (supabase as any)
+          .from("activities")
+          .select("user_id, km, status, group_ride_id")
+          .in("group_ride_id", groupIds)) as { data: PelotonActivity[] | null };
+        setPelotonSizes(groupSizes(linked || []));
+      } else {
+        setPelotonSizes(new Map());
+      }
     } catch {
       setActs([]);
     }
@@ -372,6 +390,24 @@ function MesKm() {
                                 </>
                               )}
                             </Badge>
+
+                            {a.group_ride_id && (
+                              <Badge
+                                variant="outline"
+                                className="gap-1 border-orange-300 bg-orange-50 text-[10px] font-bold text-orange-700 dark:border-orange-800 dark:bg-orange-950/40 dark:text-orange-300"
+                                title="Sortie à plusieurs : seuls les participants dont la sortie est validée comptent"
+                              >
+                                <Users className="h-3 w-3" />
+                                Peloton ·{" "}
+                                {(() => {
+                                  const n = pelotonSizes.get(a.group_ride_id) ?? 0;
+                                  const m = pelotonMultiplier(n);
+                                  return m > 0
+                                    ? `${n} validés · ×${m.toLocaleString("fr-BE")}`
+                                    : "en attente des autres";
+                                })()}
+                              </Badge>
+                            )}
 
                             {/* Status badge */}
                             {a.status === "approved" ? (

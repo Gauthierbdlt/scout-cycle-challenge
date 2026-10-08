@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import { GroupRidePicker, type GroupChoice } from "@/components/GroupRidePicker";
 import { removeStorageFiles } from "@/lib/proofStorage";
 import { parseElevation } from "@/lib/jerseys";
 import { useAuth } from "@/lib/useAuth";
@@ -145,6 +146,18 @@ export function DailyDistanceForm({
   const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [gpxFile, setGpxFile] = useState<File | null>(null);
   const [activeTab, setActiveTab] = useState<"strava" | "photo">("strava");
+  const [groupChoice, setGroupChoice] = useState<GroupChoice>({ mode: "seul" });
+  const [pickerKey, setPickerKey] = useState(0);
+  const joiningGroup = groupChoice.mode === "rejoindre";
+
+  const handleGroupChoice = (v: GroupChoice) => {
+    setGroupChoice(v);
+    // Rejoindre une sortie de groupe : la date et le sport sont ceux du groupe
+    if (v.mode === "rejoindre") {
+      setRideDate(v.rideDate);
+      setSport(v.sport);
+    }
+  };
 
   // Patrols state
   const [patrols, setPatrols] = useState<Patrol[]>([]);
@@ -364,6 +377,40 @@ export function DailyDistanceForm({
             : "[course]"
           : rideNote.trim() || null;
 
+      // 7. Sortie à plusieurs (classement Peloton)
+      let groupRideId: string | null = null;
+      let createdGroupId: string | null = null;
+      if (groupChoice.mode === "rejoindre") {
+        groupRideId = groupChoice.groupId;
+      } else if (groupChoice.mode === "nouveau" && groupChoice.companions.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const sb = supabase as any;
+        const { data: group, error: groupError } = await sb
+          .from("group_rides")
+          .insert({ created_by: targetUserId, ride_date: rideDate, sport })
+          .select("id")
+          .single();
+        if (!groupError && group?.id) {
+          const { error: membersError } = await sb.from("group_ride_members").insert(
+            [targetUserId, ...groupChoice.companions].map((uid) => ({
+              group_id: group.id,
+              user_id: uid,
+            })),
+          );
+          if (membersError) {
+            await sb.from("group_rides").delete().eq("id", group.id);
+          } else {
+            groupRideId = group.id;
+            createdGroupId = group.id;
+          }
+        }
+        if (!groupRideId) {
+          toast.warning(
+            "La sortie à plusieurs n'a pas pu être créée : ta sortie est enregistrée seule.",
+          );
+        }
+      }
+
       const activityPayload = {
         user_id: targetUserId,
         km: kmNumber,
@@ -374,6 +421,7 @@ export function DailyDistanceForm({
         gpx_path: gpxPublicUrl, // <-- Enregistre le lien du GPX épuré pour la carte interactive
         note: finalNote,
         status: activityStatus,
+        group_ride_id: groupRideId,
       };
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -385,6 +433,10 @@ export function DailyDistanceForm({
       if (insertError) {
         // La sortie n'a pas été créée : ne pas laisser de fichiers orphelins
         await removeStorageFiles([proofPublicUrl, gpxPublicUrl]);
+        if (createdGroupId) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (supabase as any).from("group_rides").delete().eq("id", createdGroupId);
+        }
         console.error("Erreur insertion activités Supabase :", insertError);
         toast.error("Erreur Supabase : " + insertError.message);
         setSubmitting(false);
@@ -442,6 +494,8 @@ export function DailyDistanceForm({
       setProofFile(null);
       setProofPreview(null);
       setGpxFile(null);
+      setGroupChoice({ mode: "seul" });
+      setPickerKey((k) => k + 1);
 
       if (onSuccess) {
         onSuccess({
@@ -508,6 +562,7 @@ export function DailyDistanceForm({
           <button
             type="button"
             onClick={() => setSport("velo")}
+            disabled={joiningGroup}
             className={cn(
               "flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-black transition-all",
               sport === "velo"
@@ -521,6 +576,7 @@ export function DailyDistanceForm({
           <button
             type="button"
             onClick={() => setSport("course")}
+            disabled={joiningGroup}
             className={cn(
               "flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-black transition-all",
               sport === "course"
@@ -693,6 +749,7 @@ export function DailyDistanceForm({
                 type="date"
                 value={rideDate}
                 onChange={(e) => setRideDate(e.target.value)}
+                disabled={joiningGroup}
                 className="h-12 rounded-xl shadow-xs"
                 max={new Date().toISOString().slice(0, 10)}
                 required
@@ -731,6 +788,13 @@ export function DailyDistanceForm({
               maillot à pois.
             </p>
           </div>
+
+          <GroupRidePicker
+            key={pickerKey}
+            userId={user?.id}
+            value={groupChoice}
+            onChange={handleGroupChoice}
+          />
 
           <div className="space-y-3 rounded-xl border border-border/70 bg-card/60 p-4">
             <div className="flex items-center justify-between">

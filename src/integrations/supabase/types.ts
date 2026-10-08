@@ -12,6 +12,7 @@ export type Database = {
         Row: {
           created_at: string;
           elevation_m: number | null;
+          group_ride_id: string | null;
           id: string;
           km: number;
           note: string | null;
@@ -24,6 +25,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           elevation_m?: number | null;
+          group_ride_id?: string | null;
           id?: string;
           km: number;
           note?: string | null;
@@ -36,6 +38,7 @@ export type Database = {
         Update: {
           created_at?: string;
           elevation_m?: number | null;
+          group_ride_id?: string | null;
           id?: string;
           km?: number;
           note?: string | null;
@@ -54,6 +57,56 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      group_ride_members: {
+        Row: {
+          added_at: string;
+          group_id: string;
+          user_id: string;
+        };
+        Insert: {
+          added_at?: string;
+          group_id: string;
+          user_id: string;
+        };
+        Update: {
+          added_at?: string;
+          group_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "group_ride_members_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "group_rides";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      group_rides: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          id: string;
+          ride_date: string;
+          sport: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string;
+          id?: string;
+          ride_date: string;
+          sport?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          id?: string;
+          ride_date?: string;
+          sport?: string;
+        };
+        Relationships: [];
       };
       patrols: {
         Row: {
@@ -183,6 +236,7 @@ export type Database = {
         Row: {
           created_at: string | null;
           elevation_m: number | null;
+          group_ride_id: string | null;
           id: string | null;
           km: number | null;
           note: string | null;
