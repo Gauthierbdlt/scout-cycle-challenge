@@ -398,10 +398,12 @@ function Index() {
       <section className="relative overflow-hidden bg-bark text-bark-foreground">
         <img
           src={hero}
-          alt="Scouts à vélo en forêt"
-          className="absolute inset-0 h-full w-full object-cover opacity-50 transition-opacity"
+          alt="Le drapeau de la troupe au bord du circuit des 24h vélo"
+          className="absolute inset-0 h-full w-full object-cover object-[75%_68%] md:object-[50%_60%] opacity-70 transition-opacity"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-bark via-bark/60 to-transparent" />
+        {/* Voile orange pour atténuer les couleurs de la photo */}
+        <div className="absolute inset-0 bg-primary/35 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-gradient-to-t from-bark via-bark/55 to-transparent" />
         <div className="relative mx-auto max-w-6xl px-4 py-16 md:py-24">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full bg-primary px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-primary-foreground shadow-md">
