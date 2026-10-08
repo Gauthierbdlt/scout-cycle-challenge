@@ -37,6 +37,9 @@ create index if not exists activities_group_ride_idx on public.activities (group
 
 grant select, insert, delete on public.group_rides to authenticated;
 grant select, insert, delete on public.group_ride_members to authenticated;
+-- Supabase donne par défaut des droits au rôle anonyme sur les nouvelles tables
+revoke all on public.group_rides from anon;
+revoke all on public.group_ride_members from anon;
 
 alter table public.group_rides enable row level security;
 alter table public.group_ride_members enable row level security;
