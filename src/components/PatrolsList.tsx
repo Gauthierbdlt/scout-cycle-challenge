@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { getPatrolEmblem } from "@/lib/database";
 import {
   isStaffPatrol,
   matchesCategory,
@@ -70,21 +71,6 @@ export interface PatrolsListProps {
   compact?: boolean;
   /** Optional class name */
   className?: string;
-}
-
-function getPatrolIcon(name: string): string {
-  const n = name.toLowerCase();
-  if (n.includes("lynx")) return "🐱";
-  if (n.includes("gazelle")) return "🦌";
-  if (n.includes("girafe")) return "🦒";
-  if (n.includes("marmotte")) return "🦫";
-  if (n.includes("cougar")) return "🐆";
-  if (n.includes("condor")) return "🦅";
-  if (n.includes("jaguar")) return "🐅";
-  if (n.includes("bison")) return "🦬";
-  if (n.includes("faucon")) return "🦅";
-  if (n.includes("staff") || n.includes("chef")) return "⚜️";
-  return "🚴";
 }
 
 function getWeekBoundaries(offsetWeeks: number = 0): { from: string; to: string } {
@@ -658,7 +644,7 @@ export function PatrolsList({
                     </div>
 
                     {/* Émoticône animal / scout */}
-                    <span className="text-2xl shrink-0">{getPatrolIcon(patrol.name)}</span>
+                    <span className="text-2xl shrink-0">{getPatrolEmblem(patrol.name)}</span>
 
                     {/* Nom et catégorie */}
                     <div className="min-w-0">

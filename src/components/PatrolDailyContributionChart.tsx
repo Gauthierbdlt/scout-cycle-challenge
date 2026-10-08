@@ -22,7 +22,7 @@ import {
   Filter,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { db, type Patrol } from "@/lib/database";
+import { db, type Patrol, getPatrolEmblem } from "@/lib/database";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -67,21 +67,6 @@ function getPatrolColor(name: string, index: number): string {
     "#6366f1",
   ];
   return defaultColors[index % defaultColors.length];
-}
-
-function getPatrolIcon(name: string): string {
-  const n = name.toLowerCase();
-  if (n.includes("lynx")) return "🐱";
-  if (n.includes("gazelle")) return "🦌";
-  if (n.includes("girafe")) return "🦒";
-  if (n.includes("marmotte")) return "🦫";
-  if (n.includes("cougar")) return "🐆";
-  if (n.includes("condor")) return "🦅";
-  if (n.includes("jaguar")) return "🐅";
-  if (n.includes("bison")) return "🦬";
-  if (n.includes("faucon")) return "🦅";
-  if (n.includes("staff") || n.includes("chef")) return "⚜️";
-  return "🚴";
 }
 
 interface RawActivity {
@@ -148,7 +133,7 @@ function CustomTooltip({ active, payload, label, patrolsMap }: CustomTooltipProp
           {activeContributions.map((item) => {
             const patrol = patrolsMap?.get(item.dataKey);
             const patrolName = patrol ? patrol.name : item.name;
-            const icon = getPatrolIcon(patrolName);
+            const icon = getPatrolEmblem(patrolName);
             return (
               <div key={item.dataKey} className="flex items-center justify-between gap-3 py-0.5">
                 <div className="flex items-center gap-1.5 truncate">
@@ -630,7 +615,7 @@ export function PatrolDailyContributionChart({
         <div className="flex flex-wrap items-center justify-center gap-2 pt-2 border-t border-border/40 text-xs">
           {filteredPatrols.map((patrol, idx) => {
             const color = getPatrolColor(patrol.name, idx);
-            const icon = getPatrolIcon(patrol.name);
+            const icon = getPatrolEmblem(patrol.name);
             return (
               <div
                 key={patrol.id}
