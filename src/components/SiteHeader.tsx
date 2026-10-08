@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import {
-  Bike,
   History,
   User,
   Trophy,
@@ -18,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/useAuth";
 import { cn } from "@/lib/utils";
+import logoAlezan from "@/assets/logo-alezan.png";
 
 interface NavItem {
   to: string;
@@ -125,8 +125,12 @@ export function SiteHeader() {
           onClick={() => setMobileMenuOpen(false)}
           className="flex items-center gap-2.5 group shrink-0"
         >
-          <span className="grid h-9 w-9 sm:h-10 sm:w-10 place-items-center rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-md transition-transform group-hover:scale-105">
-            <Bike className="h-5 w-5" />
+          <span className="grid h-9 w-12 sm:h-10 sm:w-14 place-items-center rounded-xl bg-white px-1 py-0.5 shadow-md transition-transform group-hover:scale-105">
+            <img
+              src={logoAlezan}
+              alt="Logo Alezan 42 Cycling Team"
+              className="h-full w-full object-contain"
+            />
           </span>
           <div>
             <div className="flex items-center gap-1.5">

@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import {
-  Bike,
   Shield,
   User,
   ArrowRight,
@@ -31,6 +30,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import { db } from "@/lib/database";
 import { ForgotPassword } from "@/components/ForgotPassword";
+import logoAlezanComplet from "@/assets/logo-alezan-complet.png";
 import { isStaffPatrol, isTroopStaffPatrol, TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
 
 export const Route = createFileRoute("/auth")({
@@ -349,9 +349,11 @@ function AuthPage() {
 
         {/* Header Icon & Title */}
         <div className="text-center">
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-lg">
-            <Bike className="h-7 w-7" />
-          </div>
+          <img
+            src={logoAlezanComplet}
+            alt="Alezan 42 Cycling Team"
+            className="mx-auto h-24 w-auto rounded-2xl bg-white p-2 shadow-lg"
+          />
           <h1 className="mt-4 font-display text-2xl sm:text-3xl font-black text-foreground">
             Défi Vélo ALEZAN 42
           </h1>
