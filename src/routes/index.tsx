@@ -181,7 +181,9 @@ function Index() {
         const items: LeaderboardItem[] = profs
           .map((p) => {
             const pt = p.patrols;
-            const isStaffOrChef = !!p.is_admin || isStaffPatrol(pt) || p.scout_year === null;
+            // Staff = membre d'une patrouille staff. Être admin ou ne pas avoir
+            // d'année scout ne suffit pas (un admin sans patrouille compte comme staff).
+            const isStaffOrChef = isStaffPatrol(pt) || (!pt && !!p.is_admin);
 
             const userActs = acts.filter((a) => {
               if (a.user_id !== p.id) return false;
@@ -289,8 +291,13 @@ function Index() {
     return combinedPatrols
       .filter((p) => {
         if (!p) return false;
+        const staff = isStaffPatrol(p);
+        // Filtre « Staff » : uniquement les patrouilles staff ;
+        // filtre par année : pas de patrouilles staff (elles n'ont pas d'année)
+        if (scoutYear === "chef" && !staff) return false;
+        if (scoutYear !== "all" && scoutYear !== "chef" && staff) return false;
         // Les patrouilles staff apparaissent chez les Garçons ET chez les Filles
-        return matchesCategory(p.category, isStaffPatrol(p), cat);
+        return matchesCategory(p.category, staff, cat);
       })
       .map((p) => {
         const staffPatrol = isStaffPatrol(p);
@@ -316,7 +323,7 @@ function Index() {
         };
       })
       .sort((a, b) => b.km - a.km);
-  }, [patrols, filteredScouts, cat]);
+  }, [patrols, filteredScouts, cat, scoutYear]);
 
   const scoutRows = useMemo(() => {
     let list = [...filteredScouts].sort((a, b) => Number(b.km) - Number(a.km));

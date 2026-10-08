@@ -4,7 +4,7 @@
  * Règles :
  * - semaine du lundi au dimanche ;
  * - un gagnant chez les Garçons et une gagnante chez les Filles ;
- * - le staff (admins, patrouilles staff) n'est pas éligible ;
+ * - le staff (membres des patrouilles staff) n'est pas éligible ;
  * - seules les sorties validées comptent, vélo et course confondus ;
  * - une personne ne peut être désignée qu'une seule fois (pour laisser sa chance aux autres) ;
  * - le site propose, un admin confirme.
@@ -108,7 +108,6 @@ export function computeSportifCandidates(input: {
   const result: Record<SportifCategory, SportifCandidate[]> = { homme: [], femme: [] };
   for (const p of input.profiles) {
     if (input.alreadyAwarded.has(p.id)) continue;
-    if (p.is_admin) continue;
     const patrol = p.patrol_id ? patrolById.get(p.patrol_id) : undefined;
     if (!patrol || isStaffPatrol(patrol)) continue;
     if (patrol.category !== "homme" && patrol.category !== "femme") continue;
