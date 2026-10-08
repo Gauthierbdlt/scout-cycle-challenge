@@ -700,7 +700,7 @@ function Admin() {
                       <SelectContent>
                         <SelectItem value="homme">Garçons</SelectItem>
                         <SelectItem value="femme">Filles</SelectItem>
-                        <SelectItem value="staff">👑 Chefs & Maîtrise</SelectItem>
+                        <SelectItem value="staff">👑 Staff</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

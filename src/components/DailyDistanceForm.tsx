@@ -429,7 +429,7 @@ export function DailyDistanceForm({
           {finalStatus === "pending" && (
             <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              En attente de validation par la maîtrise (photo jointe)
+              En attente de validation par le staff (photo jointe)
             </p>
           )}
         </div>,
@@ -809,7 +809,7 @@ export function DailyDistanceForm({
                 </div>
                 <p className="text-[11px] text-muted-foreground flex items-center gap-1">
                   <Clock className="h-3 w-3 text-amber-500 shrink-0" />
-                  Les photos sont soumises à une rapide validation par la maîtrise/staff.
+                  Les photos sont soumises à une rapide validation par le staff.
                 </p>
               </div>
             )}

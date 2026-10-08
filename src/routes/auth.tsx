@@ -576,7 +576,7 @@ function AuthPage() {
                             return (
                               <SelectItem key={p.id} value={p.id}>
                                 {isStaff
-                                  ? "👑 Staff (Garçons & Filles)"
+                                  ? "👑 Staff"
                                   : `${p.name} (${p.category === "femme" ? "Guide / F" : "Scout / H"})`}
                               </SelectItem>
                             );

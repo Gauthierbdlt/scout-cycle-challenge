@@ -212,9 +212,7 @@ function Profil() {
                   )}
                   {selectedPatrol ? (
                     <span className="rounded-full bg-amber-500/20 border border-amber-500/30 px-2 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-300">
-                      {isChefPatrol
-                        ? "👑 Staff (Maîtrise)"
-                        : `🐺 Patrouille ${selectedPatrol.name}`}
+                      {isChefPatrol ? "👑 Staff" : `🐺 Patrouille ${selectedPatrol.name}`}
                     </span>
                   ) : (
                     <span className="rounded-full bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 text-[11px] font-bold text-amber-600">
@@ -305,7 +303,7 @@ function Profil() {
                     return (
                       <SelectItem key={p.id} value={p.id}>
                         {isStaff
-                          ? "👑 Staff (Garçons & Filles)"
+                          ? "👑 Staff"
                           : `${p.name} (${p.category === "homme" ? "Garçons" : "Filles"})`}
                       </SelectItem>
                     );

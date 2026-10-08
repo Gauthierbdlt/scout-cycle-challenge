@@ -499,7 +499,7 @@ export function AdminUserList({
                       <td className="py-3.5 px-4">
                         {p.is_chef || isStaffPatrol(currentPatrol) ? (
                           <Badge className="bg-amber-500/15 text-amber-700 text-[10px] font-bold">
-                            Chef / Staff
+                            Staff
                           </Badge>
                         ) : p.scout_year ? (
                           <span className="text-xs font-medium text-foreground">
