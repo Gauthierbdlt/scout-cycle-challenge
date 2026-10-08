@@ -16,7 +16,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
 import { db } from "@/lib/database";
-import { isTroopStaffPatrol, TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
+import { isStaffPatrol, isTroopStaffPatrol, TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
 
 export const Route = createFileRoute("/_authenticated/profil")({
   ssr: false,
@@ -116,10 +116,7 @@ function Profil() {
   }, [user.id]);
 
   const selectedPatrol = patrols.find((p) => p.id === f.patrol_id);
-  const isChefPatrol =
-    selectedPatrol?.name.toLowerCase().includes("staff") ||
-    selectedPatrol?.name.toLowerCase().includes("chef") ||
-    selectedPatrol?.category === "staff";
+  const isChefPatrol = isStaffPatrol(selectedPatrol);
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,7 +209,9 @@ function Profil() {
                   )}
                   {selectedPatrol ? (
                     <span className="rounded-full bg-amber-500/20 border border-amber-500/30 px-2 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-300">
-                      {isChefPatrol ? "👑 Staff" : `🐺 Patrouille ${selectedPatrol.name}`}
+                      {isChefPatrol
+                        ? `👑 ${selectedPatrol.name} (Staff)`
+                        : `🐺 Patrouille ${selectedPatrol.name}`}
                     </span>
                   ) : (
                     <span className="rounded-full bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 text-[11px] font-bold text-amber-600">
@@ -296,14 +295,11 @@ function Profil() {
                 </SelectTrigger>
                 <SelectContent>
                   {patrols.map((p) => {
-                    const isStaff =
-                      p.name.toLowerCase().includes("staff") ||
-                      p.name.toLowerCase().includes("chef") ||
-                      p.category === "staff";
+                    const isStaff = isStaffPatrol(p);
                     return (
                       <SelectItem key={p.id} value={p.id}>
                         {isStaff
-                          ? "👑 Staff"
+                          ? `👑 ${p.name} (Staff)`
                           : `${p.name} (${p.category === "homme" ? "Garçons" : "Filles"})`}
                       </SelectItem>
                     );
@@ -316,10 +312,11 @@ function Profil() {
               <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-300">
                 <div className="flex items-center gap-1.5 font-bold">
                   <Crown className="h-4 w-4" />
-                  Rôle Staff (Homme & Femme) sélectionné
+                  Patrouille staff sélectionnée
                 </div>
                 <p className="mt-0.5 text-[11px] opacity-90">
-                  En tant que membre du Staff, tes kilomètres comptent pour le classement général.
+                  Tes kilomètres comptent dans les classements Garçons et Filles, avec
+                  l&apos;étiquette Staff.
                 </p>
               </div>
             ) : (

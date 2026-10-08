@@ -439,8 +439,11 @@ function Index() {
                         </span>
                         <span className="rounded-full bg-amber-400/20 border border-amber-400/40 px-2.5 py-0.5 text-xs font-bold text-amber-300">
                           {profile?.patrol_name
-                            ? profile.patrol_name.toLowerCase().includes("staff")
-                              ? "👑 Staff"
+                            ? isStaffPatrol({
+                                name: profile.patrol_name,
+                                category: profile.patrol_category ?? null,
+                              })
+                              ? `👑 ${profile.patrol_name}`
                               : `🐺 Patrouille ${profile.patrol_name}`
                             : "Patrouille assignée"}
                         </span>
@@ -766,11 +769,7 @@ function Index() {
             <FilterPill active={scoutYear === "4"} onClick={() => setScoutYear("4")}>
               4ème année
             </FilterPill>
-            <FilterPill
-              active={scoutYear === "chef"}
-              onClick={() => setScoutYear("chef")}
-              badge="Mixte"
-            >
+            <FilterPill active={scoutYear === "chef"} onClick={() => setScoutYear("chef")}>
               👑 Staff
             </FilterPill>
           </div>
