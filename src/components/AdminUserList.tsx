@@ -70,6 +70,29 @@ export function AdminUserList({
   );
 
   // Toggle admin privilege via toggle switch
+  // Mot de passe temporaire défini par un admin (fonction admin_set_password).
+  const handleResetPassword = async (target: Profile) => {
+    const name = target.totem || target.full_name || target.email || "ce membre";
+    const pw = window.prompt(
+      `Nouveau mot de passe temporaire pour ${name} (6 caractères minimum).\n\nCommunique-le-lui en main propre ; il pourra le changer ensuite via « Mot de passe oublié ».`,
+    );
+    if (pw === null) return;
+    if (pw.trim().length < 6) {
+      toast.error("6 caractères minimum.");
+      return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any).rpc("admin_set_password", {
+      _user_id: target.id,
+      _password: pw.trim(),
+    });
+    if (error) {
+      toast.error("Erreur : " + error.message);
+      return;
+    }
+    toast.success(`Mot de passe de ${name} réinitialisé.`);
+  };
+
   const handleToggleAdmin = async (target: Profile, newChecked: boolean) => {
     if (target.email?.toLowerCase() === "baudeletgauthier@gmail.com" && !newChecked) {
       toast.error("Impossible de retirer les droits du compte administrateur principal.");
@@ -538,6 +561,16 @@ export function AdminUserList({
                           >
                             {isAdm ? "Administrateur" : "Scout standard"}
                           </label>
+
+                          {(!isAdm || isCurrent) && (
+                            <button
+                              type="button"
+                              onClick={() => handleResetPassword(p)}
+                              className="text-[10px] font-semibold text-primary hover:underline"
+                            >
+                              Réinitialiser le mot de passe
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

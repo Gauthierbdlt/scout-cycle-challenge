@@ -61,8 +61,12 @@ create function public.handle_activity_action() returns trigger language plpgsql
 create function public.handle_new_user() returns trigger language plpgsql security definer set search_path = public as $$ begin return new; end; $$;
 create function public.auto_confirm_user() returns trigger language plpgsql security definer set search_path = public as $$ begin return new; end; $$;
 create function public.set_admin_by_email(_email text, _make_admin boolean) returns void language plpgsql security definer as $$ begin end; $$;
-create function public.leaderboard(_from date, _to date) returns table(user_id uuid, km numeric) language sql stable security definer set search_path = public as
-  $$ select p.id, coalesce(sum(a.km),0) from public.profiles p left join public.activities a on a.user_id = p.id group by p.id $$;
+create function public.leaderboard(_from date, _to date)
+  returns table(user_id uuid, display_name text, patrol_id uuid, patrol_name text, category patrol_category, km numeric)
+  language sql stable security definer set search_path = public as
+  $$ select p.id, coalesce(p.totem, p.full_name), pa.id, pa.name, coalesce(pa.category, 'homme'::patrol_category), coalesce(sum(a.km),0)
+     from public.profiles p left join public.patrols pa on pa.id = p.patrol_id left join public.activities a on a.user_id = p.id
+     group by p.id, pa.id $$;
 
 -- Règles permissives actuelles (extrait fidèle de pg_policies)
 create policy "Enable delete for authenticated users" on public.activities for delete to authenticated using (true);

@@ -44,7 +44,7 @@ function SolidarityPage() {
   // Récupération des kilomètres collectifs (identique à ton composant CollectiveRouteMap)
   const loadCollectiveDistance = useCallback(async () => {
     try {
-      const { data: actsData } = await supabase.from("activities").select("km, status");
+      const { data: actsData } = await supabase.from("activities_public").select("km, status");
       let kmSum = 0;
       if (actsData && actsData.length > 0) {
         kmSum = actsData

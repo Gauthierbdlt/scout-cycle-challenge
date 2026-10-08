@@ -11,10 +11,16 @@ end; $$;
 -- ===== Visiteur anonyme =====
 set role anon;
 select pg_temp.as_user(null);
-do $$ begin
+do $$ declare n bigint; begin
   if (select count(*) from public.profiles) <> 0 then raise exception 'anon lit profiles'; end if;
   if (select count(*) from public.profiles_public) <> 3 then raise exception 'anon ne lit pas profiles_public'; end if;
-  if (select count(*) from public.activities) <> 2 then raise exception 'anon ne lit pas les activités'; end if;
+  -- Depuis 20261008140100, les visiteurs lisent la vue activities_public (pas la table)
+  if to_regclass('public.activities_public') is null then
+    if (select count(*) from public.activities) <> 2 then raise exception 'anon ne lit pas les activités'; end if;
+  else
+    execute 'select count(*) from public.activities_public' into strict n;
+    if n <> 2 then raise exception 'anon ne lit pas les activités publiques'; end if;
+  end if;
   raise notice 'OK anonyme : profils privés, vue publique et activités lisibles';
 end $$;
 do $$ begin

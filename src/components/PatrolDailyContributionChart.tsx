@@ -218,7 +218,7 @@ export function PatrolDailyContributionChart({
 
       // 3. Charger les activités des 7 derniers jours depuis Supabase
       const { data: actsData } = await supabase
-        .from("activities")
+        .from("activities_public")
         .select("id, user_id, km, ride_date, status")
         .gte("ride_date", minDateStr);
 

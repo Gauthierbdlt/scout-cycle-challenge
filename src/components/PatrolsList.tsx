@@ -202,7 +202,7 @@ export function PatrolsList({
         } else {
           // Fallback: Tentative de lecture directe des activités
           const { data: activitiesData } = await supabase
-            .from("activities")
+            .from("activities_public")
             .select("id, user_id, km, ride_date, status");
 
           const { data: profilesData } = await supabase
