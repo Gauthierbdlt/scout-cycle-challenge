@@ -101,7 +101,16 @@ function scoutServerApiPlugin(): Plugin {
   };
 }
 
+// Version affichée en bas du site : le commit construit par Cloudflare Pages
+// (permet de vérifier que le navigateur affiche bien la dernière version).
+const APP_VERSION = (process.env["CF_PAGES_COMMIT_SHA"] || "local").slice(0, 7);
+const APP_BUILT_AT = new Date().toISOString();
+
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(APP_VERSION),
+    __APP_BUILT_AT__: JSON.stringify(APP_BUILT_AT),
+  },
   plugins: [
     scoutServerApiPlugin(),
     tanstackStart({
