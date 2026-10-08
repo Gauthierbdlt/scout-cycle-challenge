@@ -488,8 +488,7 @@ function Index() {
                     <Button
                       asChild
                       size="sm"
-                      variant="outline"
-                      className="rounded-xl border-white/20 text-white hover:bg-white/10"
+                      className="rounded-xl border border-orange-950/40 bg-orange-900 font-bold text-white shadow-sm hover:bg-orange-800"
                     >
                       <Link to="/profil">Mon profil</Link>
                     </Button>
