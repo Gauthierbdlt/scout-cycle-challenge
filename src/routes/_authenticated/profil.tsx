@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
-import { db } from "@/lib/database";
+import { db, getPatrolEmblem } from "@/lib/database";
 import { isStaffPatrol, isTroopStaffPatrol, TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
 
 export const Route = createFileRoute("/_authenticated/profil")({
@@ -211,7 +211,7 @@ function Profil() {
                     <span className="rounded-full bg-amber-500/20 border border-amber-500/30 px-2 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-300">
                       {isChefPatrol
                         ? `👑 ${selectedPatrol.name} (Staff)`
-                        : `🐺 Patrouille ${selectedPatrol.name}`}
+                        : `${getPatrolEmblem(selectedPatrol.name)} Patrouille ${selectedPatrol.name}`}
                     </span>
                   ) : (
                     <span className="rounded-full bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 text-[11px] font-bold text-amber-600">

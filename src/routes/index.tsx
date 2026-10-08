@@ -443,8 +443,8 @@ function Index() {
                                 name: profile.patrol_name,
                                 category: profile.patrol_category ?? null,
                               })
-                              ? `👑 ${profile.patrol_name}`
-                              : `🐺 Patrouille ${profile.patrol_name}`
+                              ? `${getPatrolEmblem(profile.patrol_name)} ${profile.patrol_name}`
+                              : `${getPatrolEmblem(profile.patrol_name)} Patrouille ${profile.patrol_name}`
                             : "Patrouille assignée"}
                         </span>
                         {profile?.is_chef ? (
