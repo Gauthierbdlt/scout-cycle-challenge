@@ -13,6 +13,9 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { AuthProvider } from "@/context/AuthContext";
+import { SeasonalThemeProvider } from "@/context/SeasonalThemeContext";
+import { SeasonalDecor } from "@/components/SeasonalDecor";
+import { THEME_BOOT_SCRIPT } from "@/lib/seasonalTheme";
 import { supabase } from "@/integrations/supabase/client";
 import appCss from "../styles.css?url";
 
@@ -119,6 +122,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
   }),
+  // Applique le dernier thème connu avant l'affichage (évite un flash aux couleurs standard)
+  scripts: () => [{ children: THEME_BOOT_SCRIPT }],
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
@@ -127,7 +132,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -153,19 +158,22 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <SiteHeader />
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <footer className="py-4 text-center text-[10px] text-muted-foreground/70">
-          Version {__APP_VERSION__} · mise en ligne le{" "}
-          {new Date(__APP_BUILT_AT__).toLocaleString("fr-BE", {
-            dateStyle: "short",
-            timeStyle: "short",
-          })}
-        </footer>
-        <Toaster />
-      </AuthProvider>
+      <SeasonalThemeProvider>
+        <AuthProvider>
+          <SiteHeader />
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+          <footer className="py-4 text-center text-[10px] text-muted-foreground/70">
+            Version {__APP_VERSION__} · mise en ligne le{" "}
+            {new Date(__APP_BUILT_AT__).toLocaleString("fr-BE", {
+              dateStyle: "short",
+              timeStyle: "short",
+            })}
+          </footer>
+          <Toaster />
+          <SeasonalDecor />
+        </AuthProvider>
+      </SeasonalThemeProvider>
     </QueryClientProvider>
   );
 }
