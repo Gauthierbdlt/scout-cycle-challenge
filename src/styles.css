@@ -2,7 +2,7 @@
 @source "../src";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *, [data-theme="halloween"] *, [data-theme="noel"] *));
+@custom-variant dark (&:is(.dark *, [data-theme="halloween"] *, [data-theme="noel"] *, [data-theme="course24h"] *));
 
 @theme inline {
   --font-display: "Archivo Black", system-ui, sans-serif;
@@ -181,6 +181,101 @@
   --header: #0f3b57;
 }
 
+[data-theme="automne"] {
+  --background: oklch(0.965 0.025 70);
+  --foreground: oklch(0.28 0.06 45);
+  --card: oklch(0.985 0.015 75);
+  --card-foreground: oklch(0.28 0.06 45);
+  --popover: oklch(0.985 0.015 75);
+  --popover-foreground: oklch(0.28 0.06 45);
+  --primary: oklch(0.55 0.16 40);
+  --primary-foreground: oklch(0.98 0.01 75);
+  --secondary: oklch(0.9 0.05 70);
+  --secondary-foreground: oklch(0.3 0.07 45);
+  --muted: oklch(0.92 0.03 70);
+  --muted-foreground: oklch(0.47 0.06 50);
+  --accent: oklch(0.82 0.12 75);
+  --accent-foreground: oklch(0.3 0.07 50);
+  --border: oklch(0.84 0.05 65);
+  --input: oklch(0.84 0.05 65);
+  --ring: oklch(0.55 0.16 40);
+  --bark: oklch(0.3 0.07 40);
+  --bark-foreground: oklch(0.95 0.03 75);
+  --success: oklch(0.55 0.13 145);
+  --header: #3a2414;
+}
+[data-theme="valentin"] {
+  --background: oklch(0.975 0.02 10);
+  --foreground: oklch(0.3 0.07 10);
+  --card: oklch(0.995 0.008 10);
+  --card-foreground: oklch(0.3 0.07 10);
+  --popover: oklch(0.995 0.008 10);
+  --popover-foreground: oklch(0.3 0.07 10);
+  --primary: oklch(0.58 0.22 15);
+  --primary-foreground: oklch(0.99 0.01 10);
+  --secondary: oklch(0.93 0.04 10);
+  --secondary-foreground: oklch(0.32 0.08 10);
+  --muted: oklch(0.94 0.025 10);
+  --muted-foreground: oklch(0.5 0.07 10);
+  --accent: oklch(0.86 0.09 350);
+  --accent-foreground: oklch(0.32 0.1 10);
+  --border: oklch(0.88 0.05 10);
+  --input: oklch(0.88 0.05 10);
+  --ring: oklch(0.58 0.22 15);
+  --bark: oklch(0.32 0.1 10);
+  --bark-foreground: oklch(0.97 0.02 10);
+  --success: oklch(0.58 0.14 150);
+  --header: #4a0f22;
+}
+[data-theme="paques"] {
+  --background: oklch(0.98 0.03 100);
+  --foreground: oklch(0.3 0.06 290);
+  --card: oklch(0.995 0.012 100);
+  --card-foreground: oklch(0.3 0.06 290);
+  --popover: oklch(0.995 0.012 100);
+  --popover-foreground: oklch(0.3 0.06 290);
+  --primary: oklch(0.56 0.19 295);
+  --primary-foreground: oklch(0.99 0.01 295);
+  --secondary: oklch(0.93 0.05 300);
+  --secondary-foreground: oklch(0.32 0.07 295);
+  --muted: oklch(0.95 0.03 100);
+  --muted-foreground: oklch(0.5 0.06 295);
+  --accent: oklch(0.9 0.13 95);
+  --accent-foreground: oklch(0.32 0.07 80);
+  --border: oklch(0.89 0.05 300);
+  --input: oklch(0.89 0.05 300);
+  --ring: oklch(0.56 0.19 295);
+  --bark: oklch(0.33 0.08 295);
+  --bark-foreground: oklch(0.97 0.02 100);
+  --success: oklch(0.6 0.15 145);
+  --header: #34205a;
+}
+[data-theme="course24h"] {
+  color-scheme: dark;
+  --background: oklch(0.17 0.005 260);
+  --foreground: oklch(0.96 0.01 95);
+  --card: oklch(0.22 0.008 260);
+  --card-foreground: oklch(0.96 0.01 95);
+  --popover: oklch(0.22 0.008 260);
+  --popover-foreground: oklch(0.96 0.01 95);
+  --primary: oklch(0.86 0.18 95);
+  --primary-foreground: oklch(0.17 0.005 260);
+  --secondary: oklch(0.28 0.01 260);
+  --secondary-foreground: oklch(0.96 0.01 95);
+  --muted: oklch(0.26 0.008 260);
+  --muted-foreground: oklch(0.74 0.02 95);
+  --accent: oklch(0.6 0.22 27);
+  --accent-foreground: oklch(0.98 0.01 95);
+  --destructive: oklch(0.65 0.23 27);
+  --border: oklch(0.36 0.01 260);
+  --input: oklch(0.36 0.01 260);
+  --ring: oklch(0.86 0.18 95);
+  --bark: oklch(0.12 0.005 260);
+  --bark-foreground: oklch(0.96 0.01 95);
+  --success: oklch(0.74 0.17 145);
+  --header: #0a0a0a;
+}
+
 body {
   transition:
     background-color 0.4s ease,
@@ -355,9 +450,94 @@ body {
   line-height: 1;
 }
 
+/* Tapis au sol (feuilles d'automne, herbe de Pâques) */
+.festive-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  font-size: 20px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  letter-spacing: -4px;
+  opacity: 0.9;
+}
+/* Course : traversée rapide en bas de l'écran */
+.festive-particle.race {
+  animation-name: festive-race;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.9, 1);
+}
+@keyframes festive-race {
+  0% {
+    transform: translate3d(-15vw, 0, 0) scaleX(-1);
+  }
+  100% {
+    transform: translate3d(115vw, 0, 0) scaleX(-1);
+  }
+}
+/* Petits bonds (lapin de Pâques), à l'intérieur d'une traversée « race » */
+.festive-bounce {
+  display: inline-block;
+  animation: festive-bounce 0.7s cubic-bezier(0.3, 0, 0.7, 1) infinite alternate;
+}
+@keyframes festive-bounce {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-22px);
+  }
+}
+/* Traits de vitesse */
+.festive-streak {
+  position: absolute;
+  left: 0;
+  height: 2px;
+  width: 22vw;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgb(250 204 21 / 0.55), transparent);
+  animation: festive-streak linear infinite;
+}
+@keyframes festive-streak {
+  0% {
+    transform: translate3d(-30vw, 0, 0);
+  }
+  100% {
+    transform: translate3d(130vw, 0, 0);
+  }
+}
+/* Bandeaux sous l'en-tête */
+.festive-trim-course24h {
+  height: 12px;
+  background: repeating-conic-gradient(#fafafa 0 25%, #0a0a0a 0 50%) 0 0 / 12px 12px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.35);
+}
+.festive-trim-valentin,
+.festive-trim-paques,
+.festive-trim-automne {
+  height: 22px;
+  font-size: 14px;
+  line-height: 22px;
+  white-space: nowrap;
+  letter-spacing: 3px;
+}
+/* Mode discret ou animations coupées : tout reste immobile */
+.festive-still .festive-sun,
+.festive-still .festive-spider,
+.festive-trim.festive-still::before,
+.festive-trim.festive-still::after,
+.festive-still .festive-spider {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .festive-particle {
+  .festive-particle,
+  .festive-streak {
     display: none;
+  }
+  .festive-bounce {
+    animation: none;
   }
   .festive-sun,
   .festive-spider,
