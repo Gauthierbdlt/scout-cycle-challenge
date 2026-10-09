@@ -53,6 +53,26 @@ const schema = z.object({
   patrol_id: z.string().min(1, "Choisis ta patrouille"),
 });
 
+const MONTHS = [
+  "janvier",
+  "février",
+  "mars",
+  "avril",
+  "mai",
+  "juin",
+  "juillet",
+  "août",
+  "septembre",
+  "octobre",
+  "novembre",
+  "décembre",
+];
+
+/** Nombre de jours max d'un mois (29 en février : anniversaire du 29/02 accepté). */
+function daysInMonth(month: number): number {
+  return month === 2 ? 29 : [4, 6, 9, 11].includes(month) ? 30 : 31;
+}
+
 function Profil() {
   const { user } = Route.useRouteContext();
   const { refreshProfile } = useAuth();
@@ -65,6 +85,8 @@ function Profil() {
     phone: "",
     strava_url: "",
     patrol_id: "",
+    birth_day: "",
+    birth_month: "",
   });
   const [busy, setBusy] = useState(false);
 
@@ -106,6 +128,8 @@ function Profil() {
           phone: p.phone ?? "",
           strava_url: p.strava_url ?? "",
           patrol_id: p.patrol_id ?? "",
+          birth_day: p.birth_day ? String(p.birth_day) : "",
+          birth_month: p.birth_month ? String(p.birth_month) : "",
         });
       }
     }
@@ -140,6 +164,20 @@ function Profil() {
 
     const d = parsed.data;
 
+    // Anniversaire facultatif : jour ET mois, ou rien
+    const birthDay = f.birth_day ? Number(f.birth_day) : null;
+    const birthMonth = f.birth_month ? Number(f.birth_month) : null;
+    if ((birthDay === null) !== (birthMonth === null)) {
+      setBusy(false);
+      toast.error("Anniversaire : choisis le jour et le mois (ou aucun des deux)");
+      return;
+    }
+    if (birthDay && birthMonth && birthDay > daysInMonth(birthMonth)) {
+      setBusy(false);
+      toast.error("Cette date d'anniversaire n'existe pas");
+      return;
+    }
+
     let targetPatrolId: string | null = d.patrol_id;
     if (!targetPatrolId || d.patrol_id === "staff" || d.patrol_id.includes("staff")) {
       const staffItem = patrols.find((p) => isTroopStaffPatrol(p));
@@ -158,6 +196,8 @@ function Profil() {
       strava_url: d.strava_url?.trim() || null,
       scout_year: d.scout_year ?? null,
       patrol_id: targetPatrolId,
+      birth_day: birthDay,
+      birth_month: birthMonth,
       onboarded: true,
     };
 
@@ -335,6 +375,48 @@ function Profil() {
                 </Select>
               </div>
             )}
+
+            <div className="space-y-1.5">
+              <Label>Anniversaire (optionnel)</Label>
+              <div className="grid grid-cols-[5.5rem_1fr] gap-2">
+                <Select
+                  value={f.birth_day || "none"}
+                  onValueChange={(v) => setF({ ...f, birth_day: v === "none" ? "" : v })}
+                >
+                  <SelectTrigger aria-label="Jour de l'anniversaire">
+                    <SelectValue placeholder="Jour" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    <SelectItem value="none">—</SelectItem>
+                    {Array.from({ length: 31 }, (_, i) => String(i + 1)).map((d) => (
+                      <SelectItem key={d} value={d}>
+                        {d}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={f.birth_month || "none"}
+                  onValueChange={(v) => setF({ ...f, birth_month: v === "none" ? "" : v })}
+                >
+                  <SelectTrigger aria-label="Mois de l'anniversaire">
+                    <SelectValue placeholder="Mois" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    <SelectItem value="none">—</SelectItem>
+                    {MONTHS.map((m, i) => (
+                      <SelectItem key={m} value={String(i + 1)}>
+                        {m}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Seulement le jour et le mois, jamais l&apos;année. Ton anniversaire sera souhaité
+                sur l&apos;accueil, visible uniquement par les membres connectés.
+              </p>
+            </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="phone">Numéro de téléphone (optionnel)</Label>

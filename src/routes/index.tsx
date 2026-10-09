@@ -41,6 +41,7 @@ import { computeJerseys } from "@/lib/jerseys";
 import { JerseysPanel } from "@/components/JerseysPanel";
 import { ScoutSportifCard } from "@/components/ScoutSportifCard";
 import { PelotonPanel } from "@/components/PelotonPanel";
+import { BirthdayBanner } from "@/components/BirthdayBanner";
 import { computePeloton, type PelotonUserScore } from "@/lib/peloton";
 
 interface LeaderboardItem {
@@ -585,6 +586,9 @@ function Index() {
       <main className="mx-auto max-w-6xl px-4 py-8 space-y-8">
         {/* Grand Compte à Rebours */}
         <CountdownBanner isAdmin={isAdmin} />
+
+        {/* Anniversaires : membres connectés uniquement */}
+        <BirthdayBanner userId={user?.id} />
 
         {/* SELECTEUR DU MODE SPORT (VÉLO vs COURSE À PIED vs COMBINÉ) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-border/80 bg-card p-3 shadow-sm">
