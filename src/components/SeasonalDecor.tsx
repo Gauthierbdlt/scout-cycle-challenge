@@ -129,6 +129,121 @@ const DECOR: Record<Exclude<SeasonalThemeId, "default">, Decor> = {
       { char: "⏱️", className: "top-20 right-4", size: 26 },
     ],
   },
+  hiver: {
+    particles: [
+      {
+        chars: ["❄️", "❅", "❆"],
+        mode: "fall",
+        count: 14,
+        size: [12, 22],
+        duration: [12, 24],
+        opacity: 0.75,
+      },
+    ],
+    corners: [
+      { char: "⛄", className: "bottom-5 left-4", size: 36 },
+      { char: "🧤", className: "bottom-5 right-5", size: 26 },
+    ],
+  },
+  carnaval: {
+    particles: [
+      {
+        chars: ["🎊", "🎉", "✨", "🎊"],
+        mode: "fall",
+        count: 22,
+        size: [12, 22],
+        duration: [7, 15],
+        opacity: 0.9,
+      },
+      {
+        chars: ["🎈"],
+        mode: "fly",
+        count: 3,
+        size: [26, 34],
+        duration: [24, 40],
+        altitude: [15, 70],
+      },
+    ],
+    corners: [
+      { char: "🎭", className: "bottom-2 left-3", size: 34 },
+      { char: "🥁", className: "bottom-2 right-4", size: 30 },
+    ],
+  },
+  nationale: {
+    particles: [
+      {
+        chars: ["✨", "⭐"],
+        mode: "fall",
+        count: 12,
+        size: [12, 20],
+        duration: [8, 16],
+        opacity: 0.8,
+      },
+      {
+        chars: ["🇧🇪"],
+        mode: "fly",
+        count: 3,
+        size: [22, 30],
+        duration: [24, 40],
+        altitude: [18, 60],
+      },
+    ],
+    corners: [
+      { char: "🍟", className: "bottom-2 left-3", size: 32 },
+      { char: "🧇", className: "bottom-2 right-4", size: 30 },
+    ],
+  },
+  foot: {
+    ground: "🌱🌿🌱🌱🌿",
+    particles: [
+      {
+        chars: ["⚽"],
+        mode: "race",
+        count: 2,
+        size: [22, 30],
+        duration: [9, 15],
+        altitude: [88, 93],
+        bounce: true,
+      },
+      {
+        chars: ["🎉", "🟨", "⚽"],
+        mode: "fall",
+        count: 9,
+        size: [12, 18],
+        duration: [9, 16],
+        opacity: 0.75,
+      },
+    ],
+    corners: [
+      { char: "🥅", className: "bottom-6 left-3", size: 36 },
+      { char: "🏆", className: "bottom-6 right-4", size: 30 },
+    ],
+  },
+  tennis: {
+    particles: [
+      {
+        chars: ["🎾"],
+        mode: "race",
+        count: 2,
+        size: [20, 26],
+        duration: [8, 13],
+        altitude: [87, 93],
+        bounce: true,
+      },
+      {
+        chars: ["🎾"],
+        mode: "fall",
+        count: 6,
+        size: [14, 20],
+        duration: [10, 18],
+        opacity: 0.85,
+      },
+    ],
+    corners: [
+      { char: "🏟️", className: "bottom-2 left-3", size: 32 },
+      { char: "🏆", className: "bottom-2 right-4", size: 30 },
+    ],
+  },
   halloween: {
     particles: [
       {

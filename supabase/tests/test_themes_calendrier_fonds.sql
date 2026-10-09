@@ -23,7 +23,7 @@ do $$ begin
     raise exception 'mode inconnu accepté';
   exception when check_violation then null; end;
   begin
-    insert into public.site_settings (key, value) values ('background:carnaval', 'https://x');
+    insert into public.site_settings (key, value) values ('background:inconnu', 'https://x');
     raise exception 'fond pour un thème inconnu accepté';
   exception when check_violation then null; end;
   begin
