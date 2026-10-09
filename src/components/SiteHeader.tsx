@@ -139,7 +139,7 @@ export function SiteHeader() {
         </Link>
 
         {/* ============================================================== */}
-        {/* NAVIGATION ORDINATEUR : icônes monochromes, libellé de la page active */}
+        {/* NAVIGATION ORDINATEUR : icônes aux couleurs du thème, libellé déplié au survol */}
         {/* ============================================================== */}
         <nav className="hidden md:flex items-center gap-2">
           <div className="flex items-center gap-0.5 rounded-xl border border-white/10 bg-white/[0.04] p-1">
@@ -155,18 +155,19 @@ export function SiteHeader() {
                   aria-label={item.label}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "relative flex h-9 items-center gap-2 rounded-lg px-2.5 text-[13px] font-semibold transition-colors duration-150",
+                    "group relative flex h-9 items-center rounded-lg px-2.5 text-[13px] font-semibold transition-all duration-300",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
                     isActive
-                      ? "bg-white text-[var(--header)] shadow-sm"
-                      : "text-white/65 hover:bg-white/[0.08] hover:text-white",
+                      ? "bg-[var(--nav-active)] text-[var(--nav-active-foreground)] shadow-sm"
+                      : "text-[var(--nav-icon)] hover:bg-[var(--nav-hover)] hover:text-white",
                   )}
                 >
-                  <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
-                  {/* Libellé : toujours visible pour la page active, sur grand écran pour les autres */}
-                  <span
-                    className={cn("whitespace-nowrap", isActive ? "inline" : "hidden xl:inline")}
-                  >
+                  <Icon
+                    className="h-[18px] w-[18px] shrink-0 transition-transform duration-200 group-hover:scale-110"
+                    strokeWidth={1.75}
+                  />
+                  {/* Libellé replié, il se déplie au survol (ou au focus clavier) */}
+                  <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 ease-out group-hover:max-w-[120px] group-hover:pl-2 group-hover:opacity-100 group-focus-visible:max-w-[120px] group-focus-visible:pl-2 group-focus-visible:opacity-100">
                     {item.label}
                   </span>
                 </Link>
@@ -183,9 +184,15 @@ export function SiteHeader() {
                 onClick={handleSignOut}
                 title="Déconnexion"
                 aria-label="Déconnexion"
-                className="h-9 rounded-lg px-2.5 text-white/65 transition-colors hover:bg-white/[0.08] hover:text-white"
+                className="group h-9 gap-0 rounded-lg px-2.5 text-white/65 transition-all hover:bg-rose-500/20 hover:text-rose-200"
               >
-                <LogOut className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
+                <LogOut
+                  className="h-[18px] w-[18px] shrink-0 transition-transform group-hover:scale-110"
+                  strokeWidth={1.75}
+                />
+                <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 ease-out group-hover:max-w-[120px] group-hover:pl-2 group-hover:opacity-100">
+                  Déconnexion
+                </span>
               </Button>
             ) : (
               <Button
@@ -289,8 +296,8 @@ export function SiteHeader() {
                       className={cn(
                         "grid h-9 w-9 shrink-0 place-items-center rounded-lg border",
                         isActive
-                          ? "border-transparent bg-white text-[var(--header)]"
-                          : "border-white/10 bg-white/[0.06] text-white/80",
+                          ? "border-transparent bg-[var(--nav-active)] text-[var(--nav-active-foreground)]"
+                          : "border-white/10 bg-[var(--nav-hover)] text-[var(--nav-icon)]",
                       )}
                     >
                       <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />

@@ -404,6 +404,16 @@
   --header: #14472a;
 }
 
+/* Menu du haut : icônes et page active aux couleurs du thème.
+   Définis sur :root (= <html>, qui porte aussi data-theme) : var(--primary) y
+   prend donc la valeur du thème affiché. */
+:root {
+  --nav-icon: color-mix(in oklab, var(--primary) 45%, white);
+  --nav-hover: color-mix(in oklab, var(--primary) 22%, transparent);
+  --nav-active: var(--primary);
+  --nav-active-foreground: var(--primary-foreground);
+}
+
 /* Compte à rebours : fond et accents tirés des couleurs du thème */
 [data-theme] {
   --countdown: color-mix(in oklab, var(--bark) 90%, black);
