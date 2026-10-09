@@ -18,6 +18,7 @@ import {
   FileText,
   Award,
   Palette,
+  BrushCleaning,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +48,7 @@ import { AdminUserList } from "@/components/AdminUserList";
 import { ExportDialog } from "@/components/ExportDialog";
 import { CATEGORY_LABELS, type PatrolCategory, TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
 import { SeasonalThemeAdmin } from "@/components/SeasonalThemeAdmin";
+import { CleanupAdmin } from "@/components/CleanupAdmin";
 import { ScoutSportifAdmin, type SportifBadge } from "@/components/ScoutSportifAdmin";
 
 const TAB_TRIGGER = "shrink-0 rounded-lg px-3 py-2 text-xs font-bold gap-1.5 md:py-1";
@@ -381,7 +383,7 @@ function Admin() {
 
         <Tabs defaultValue="validations" className="space-y-5 md:space-y-6">
           {/* Mobile : une seule ligne qui défile, collée sous l'en-tête ; ordinateur : 6 colonnes */}
-          <TabsList className="sticky top-[58px] z-30 -mx-4 flex h-auto w-[calc(100%+2rem)] justify-start gap-1 overflow-x-auto rounded-none border-b bg-muted/95 p-1.5 backdrop-blur [scrollbar-width:none] md:static md:mx-0 md:grid md:w-full md:grid-cols-6 md:rounded-xl md:border-0 md:p-1 [&::-webkit-scrollbar]:hidden">
+          <TabsList className="sticky top-[58px] z-30 -mx-4 flex h-auto w-[calc(100%+2rem)] justify-start gap-1 overflow-x-auto rounded-none border-b bg-muted/95 p-1.5 backdrop-blur [scrollbar-width:none] md:static md:mx-0 md:grid md:w-full md:grid-cols-7 md:rounded-xl md:border-0 md:p-1 [&::-webkit-scrollbar]:hidden">
             <TabsTrigger value="validations" className={TAB_TRIGGER}>
               <Check className="h-4 w-4" />
               Sorties ({pending.length})
@@ -405,6 +407,10 @@ function Admin() {
             <TabsTrigger value="fetes" className={TAB_TRIGGER}>
               <Palette className="h-4 w-4" />
               Fêtes
+            </TabsTrigger>
+            <TabsTrigger value="menage" className={TAB_TRIGGER}>
+              <BrushCleaning className="h-4 w-4" />
+              Ménage
             </TabsTrigger>
           </TabsList>
 
@@ -471,6 +477,15 @@ function Admin() {
                             Sortie du {new Date(act.ride_date).toLocaleDateString("fr-FR")} •{" "}
                             {cleanActivityNote(act.note) || "Sortie"}
                           </p>
+                          {act.created_at &&
+                            Date.now() - Date.parse(act.created_at) > 30 * 864e5 && (
+                              <p className="mt-1 text-[11px] font-semibold text-amber-700 dark:text-amber-400">
+                                ⚠️ En attente depuis plus de 30 jours : supprimée automatiquement le{" "}
+                                {new Date(
+                                  Date.parse(act.created_at) + 60 * 864e5,
+                                ).toLocaleDateString("fr-BE")}
+                              </p>
+                            )}
                           {act.proof_path && (
                             <div className="mt-2 hidden sm:block">
                               <a
@@ -806,6 +821,10 @@ function Admin() {
           {/* Tab 6: Thème de fête */}
           <TabsContent value="fetes" className="space-y-6">
             <SeasonalThemeAdmin />
+          </TabsContent>
+
+          <TabsContent value="menage" className="space-y-6">
+            <CleanupAdmin />
           </TabsContent>
         </Tabs>
       </main>
