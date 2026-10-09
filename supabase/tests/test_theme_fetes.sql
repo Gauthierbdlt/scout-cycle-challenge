@@ -42,7 +42,7 @@ do $$ begin
     raise exception 'un admin doit pouvoir changer le thème';
   end if;
   begin
-    update public.site_settings set value = 'carnaval' where key = 'theme';
+    update public.site_settings set value = 'theme_inconnu' where key = 'theme';
     raise exception 'un thème inconnu doit être refusé';
   exception when check_violation then null;
   end;

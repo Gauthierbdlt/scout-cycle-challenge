@@ -3,6 +3,10 @@
 
 do $$ begin create role anon nologin; exception when duplicate_object then null; end $$;
 do $$ begin create role authenticated nologin; exception when duplicate_object then null; end $$;
+do $$ begin create role service_role nologin bypassrls; exception when duplicate_object then null; end $$;
+-- Comme sur Supabase : le rôle service a tous les droits sur le schéma public
+grant usage on schema public to service_role;
+alter default privileges in schema public grant all on tables to service_role;
 create schema auth;
 create schema storage;
 grant usage on schema public, auth, storage to anon, authenticated;
