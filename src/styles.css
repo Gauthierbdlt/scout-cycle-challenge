@@ -2,7 +2,7 @@
 @source "../src";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *, [data-theme="halloween"] *, [data-theme="noel"] *, [data-theme="course24h"] *));
+@custom-variant dark (&:is(.dark *, [data-theme="halloween"] *, [data-theme="noel"] *, [data-theme="course24h"] *, [data-theme="foot"] *));
 
 @theme inline {
   --font-display: "Archivo Black", system-ui, sans-serif;
@@ -60,6 +60,12 @@
   --bark-foreground: oklch(0.95 0.03 75);
   --success: oklch(0.55 0.13 145);
   --header: #1e231e;
+  /* Compte à rebours et bouton secondaire de l'accueil : suivent le thème */
+  --countdown: #241a12;
+  --countdown-accent: #fb923c;
+  --countdown-accent-2: #fcd34d;
+  --cta-2: #7c2d12;
+  --cta-2-foreground: #ffffff;
 }
 
 @layer base {
@@ -274,6 +280,189 @@
   --bark-foreground: oklch(0.96 0.01 95);
   --success: oklch(0.74 0.17 145);
   --header: #0a0a0a;
+}
+
+[data-theme="hiver"] {
+  --background: oklch(0.975 0.012 235);
+  --foreground: oklch(0.27 0.05 250);
+  --card: oklch(0.995 0.006 235);
+  --card-foreground: oklch(0.27 0.05 250);
+  --popover: oklch(0.995 0.006 235);
+  --popover-foreground: oklch(0.27 0.05 250);
+  --primary: oklch(0.52 0.13 250);
+  --primary-foreground: oklch(0.99 0.01 235);
+  --secondary: oklch(0.92 0.035 235);
+  --secondary-foreground: oklch(0.27 0.06 250);
+  --muted: oklch(0.94 0.02 235);
+  --muted-foreground: oklch(0.5 0.05 250);
+  --accent: oklch(0.88 0.06 215);
+  --accent-foreground: oklch(0.27 0.07 250);
+  --destructive: oklch(0.58 0.2 25);
+  --border: oklch(0.87 0.035 235);
+  --input: oklch(0.87 0.035 235);
+  --ring: oklch(0.52 0.13 250);
+  --bark: oklch(0.3 0.07 250);
+  --bark-foreground: oklch(0.97 0.015 235);
+  --success: oklch(0.6 0.13 165);
+  --header: #16314f;
+}
+[data-theme="carnaval"] {
+  --background: oklch(0.98 0.015 320);
+  --foreground: oklch(0.28 0.09 310);
+  --card: oklch(0.995 0.008 320);
+  --card-foreground: oklch(0.28 0.09 310);
+  --popover: oklch(0.995 0.008 320);
+  --popover-foreground: oklch(0.28 0.09 310);
+  --primary: oklch(0.55 0.25 335);
+  --primary-foreground: oklch(0.99 0.01 335);
+  --secondary: oklch(0.93 0.05 310);
+  --secondary-foreground: oklch(0.28 0.09 310);
+  --muted: oklch(0.95 0.025 320);
+  --muted-foreground: oklch(0.5 0.07 310);
+  --accent: oklch(0.88 0.17 95);
+  --accent-foreground: oklch(0.3 0.08 80);
+  --destructive: oklch(0.58 0.22 25);
+  --border: oklch(0.88 0.05 320);
+  --input: oklch(0.88 0.05 320);
+  --ring: oklch(0.55 0.25 335);
+  --bark: oklch(0.3 0.13 310);
+  --bark-foreground: oklch(0.97 0.02 320);
+  --success: oklch(0.62 0.15 160);
+  --header: #3a0f5c;
+}
+[data-theme="nationale"] {
+  --background: oklch(0.985 0.025 100);
+  --foreground: oklch(0.2 0.01 90);
+  --card: oklch(0.998 0.01 100);
+  --card-foreground: oklch(0.2 0.01 90);
+  --popover: oklch(0.998 0.01 100);
+  --popover-foreground: oklch(0.2 0.01 90);
+  --primary: oklch(0.58 0.23 27);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.94 0.05 100);
+  --secondary-foreground: oklch(0.2 0.01 90);
+  --muted: oklch(0.95 0.025 100);
+  --muted-foreground: oklch(0.45 0.03 90);
+  --accent: oklch(0.89 0.17 98);
+  --accent-foreground: oklch(0.2 0.02 90);
+  --destructive: oklch(0.5 0.22 27);
+  --border: oklch(0.88 0.05 100);
+  --input: oklch(0.88 0.05 100);
+  --ring: oklch(0.58 0.23 27);
+  --bark: oklch(0.2 0.01 90);
+  --bark-foreground: oklch(0.97 0.03 98);
+  --success: oklch(0.58 0.14 150);
+  --header: #111111;
+}
+[data-theme="foot"] {
+  color-scheme: dark;
+  --background: oklch(0.26 0.07 150);
+  --foreground: oklch(0.97 0.01 120);
+  --card: oklch(0.31 0.08 150);
+  --card-foreground: oklch(0.97 0.01 120);
+  --popover: oklch(0.31 0.08 150);
+  --popover-foreground: oklch(0.97 0.01 120);
+  --primary: oklch(0.88 0.17 100);
+  --primary-foreground: oklch(0.2 0.06 150);
+  --secondary: oklch(0.37 0.08 150);
+  --secondary-foreground: oklch(0.97 0.01 120);
+  --muted: oklch(0.33 0.07 150);
+  --muted-foreground: oklch(0.8 0.05 140);
+  --accent: oklch(0.6 0.22 27);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.65 0.22 27);
+  --border: oklch(0.45 0.08 150);
+  --input: oklch(0.45 0.08 150);
+  --ring: oklch(0.88 0.17 100);
+  --bark: oklch(0.2 0.06 150);
+  --bark-foreground: oklch(0.97 0.01 120);
+  --success: oklch(0.78 0.18 145);
+  --header: #0e2a16;
+}
+[data-theme="tennis"] {
+  --background: oklch(0.985 0.012 140);
+  --foreground: oklch(0.27 0.06 150);
+  --card: oklch(0.998 0.006 140);
+  --card-foreground: oklch(0.27 0.06 150);
+  --popover: oklch(0.998 0.006 140);
+  --popover-foreground: oklch(0.27 0.06 150);
+  --primary: oklch(0.42 0.11 150);
+  --primary-foreground: oklch(0.99 0.01 140);
+  --secondary: oklch(0.93 0.04 140);
+  --secondary-foreground: oklch(0.27 0.06 150);
+  --muted: oklch(0.95 0.02 140);
+  --muted-foreground: oklch(0.5 0.05 150);
+  --accent: oklch(0.9 0.19 115);
+  --accent-foreground: oklch(0.3 0.08 130);
+  --destructive: oklch(0.58 0.2 27);
+  --border: oklch(0.88 0.04 140);
+  --input: oklch(0.88 0.04 140);
+  --ring: oklch(0.42 0.11 150);
+  --bark: oklch(0.3 0.08 150);
+  --bark-foreground: oklch(0.97 0.02 130);
+  --success: oklch(0.6 0.14 150);
+  --header: #14472a;
+}
+
+/* Compte à rebours : fond et accents tirés des couleurs du thème */
+[data-theme] {
+  --countdown: color-mix(in oklab, var(--bark) 90%, black);
+  --countdown-accent: color-mix(in oklab, var(--primary) 68%, white);
+  --countdown-accent-2: color-mix(in oklab, var(--accent) 55%, white);
+}
+
+/* Bouton secondaire de l'accueil (« Mon profil ») : une couleur par thème */
+[data-theme="halloween"] {
+  --cta-2: oklch(0.45 0.16 300);
+  --cta-2-foreground: #fff;
+}
+[data-theme="noel"] {
+  --cta-2: oklch(0.5 0.17 150);
+  --cta-2-foreground: #fff;
+}
+[data-theme="printemps"] {
+  --cta-2: oklch(0.55 0.15 140);
+  --cta-2-foreground: #fff;
+}
+[data-theme="ete"] {
+  --cta-2: oklch(0.8 0.16 85);
+  --cta-2-foreground: oklch(0.25 0.05 80);
+}
+[data-theme="automne"] {
+  --cta-2: oklch(0.45 0.1 40);
+  --cta-2-foreground: #fff;
+}
+[data-theme="valentin"] {
+  --cta-2: oklch(0.45 0.17 5);
+  --cta-2-foreground: #fff;
+}
+[data-theme="paques"] {
+  --cta-2: oklch(0.84 0.15 95);
+  --cta-2-foreground: oklch(0.3 0.07 80);
+}
+[data-theme="course24h"] {
+  --cta-2: oklch(0.6 0.22 27);
+  --cta-2-foreground: #fff;
+}
+[data-theme="hiver"] {
+  --cta-2: oklch(0.45 0.1 245);
+  --cta-2-foreground: #fff;
+}
+[data-theme="carnaval"] {
+  --cta-2: oklch(0.72 0.14 205);
+  --cta-2-foreground: oklch(0.22 0.06 220);
+}
+[data-theme="nationale"] {
+  --cta-2: oklch(0.89 0.17 98);
+  --cta-2-foreground: oklch(0.2 0.02 90);
+}
+[data-theme="foot"] {
+  --cta-2: oklch(0.6 0.22 27);
+  --cta-2-foreground: #fff;
+}
+[data-theme="tennis"] {
+  --cta-2: oklch(0.9 0.19 115);
+  --cta-2-foreground: oklch(0.28 0.08 140);
 }
 
 body {
@@ -521,6 +710,48 @@ body {
   line-height: 22px;
   white-space: nowrap;
   letter-spacing: 3px;
+}
+
+/* Bandeaux des thèmes Hiver, Carnaval, Fête nationale, Foot et Tennis */
+.festive-trim-hiver {
+  height: 13px;
+  background:
+    linear-gradient(135deg, #dbeafe 25%, transparent 25%) 0 0 / 24px 24px,
+    linear-gradient(225deg, #dbeafe 25%, transparent 25%) 0 0 / 24px 24px;
+  filter: drop-shadow(0 2px 2px rgb(15 40 80 / 0.25));
+}
+.festive-trim-carnaval {
+  height: 18px;
+  background:
+    linear-gradient(#1f1330, #1f1330) 0 0 / 100% 2px no-repeat,
+    conic-gradient(from -30deg at 10px 100%, #ec4899 60deg, transparent 0) 0 0 / 80px 18px repeat-x,
+    conic-gradient(from -30deg at 30px 100%, #facc15 60deg, transparent 0) 0 0 / 80px 18px repeat-x,
+    conic-gradient(from -30deg at 50px 100%, #22d3ee 60deg, transparent 0) 0 0 / 80px 18px repeat-x,
+    conic-gradient(from -30deg at 70px 100%, #a855f7 60deg, transparent 0) 0 0 / 80px 18px repeat-x;
+}
+.festive-trim-nationale {
+  height: 18px;
+  background:
+    linear-gradient(#111, #111) 0 0 / 100% 2px no-repeat,
+    conic-gradient(from -30deg at 10px 100%, #111111 60deg, transparent 0) 0 0 / 60px 18px repeat-x,
+    conic-gradient(from -30deg at 30px 100%, #fdda24 60deg, transparent 0) 0 0 / 60px 18px repeat-x,
+    conic-gradient(from -30deg at 50px 100%, #ef3340 60deg, transparent 0) 0 0 / 60px 18px repeat-x;
+}
+.festive-trim-foot {
+  height: 12px;
+  background:
+    linear-gradient(#f8fafc, #f8fafc) 0 100% / 100% 2px no-repeat,
+    repeating-linear-gradient(90deg, #14532d 0 48px, #166534 48px 96px);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.35);
+}
+.festive-trim-tennis {
+  height: 16px;
+  border-top: 3px solid #f8fafc;
+  background:
+    repeating-linear-gradient(0deg, rgb(255 255 255 / 0.55) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.55) 0 1px, transparent 1px 5px),
+    rgb(20 71 42 / 0.9);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.25);
 }
 /* Mode discret ou animations coupées : tout reste immobile */
 .festive-still .festive-sun,

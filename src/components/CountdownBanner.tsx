@@ -166,14 +166,14 @@ export function CountdownBanner({ isAdmin }: { isAdmin: boolean }) {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-orange-500/20 bg-[#241a12] p-5 sm:p-6 text-white shadow-xl">
-      <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-orange-500/15 blur-3xl" />
-      <div className="pointer-events-none absolute -left-16 -bottom-16 h-48 w-48 rounded-full bg-amber-500/10 blur-3xl" />
+    <div className="relative overflow-hidden rounded-2xl border border-[color:var(--countdown-accent)]/20 bg-[color:var(--countdown)] p-5 sm:p-6 text-white shadow-xl">
+      <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[color:var(--countdown-accent)]/15 blur-3xl" />
+      <div className="pointer-events-none absolute -left-16 -bottom-16 h-48 w-48 rounded-full bg-[color:var(--countdown-accent-2)]/10 blur-3xl" />
 
       <div className="relative z-10 flex flex-col items-center justify-between gap-5 lg:flex-row">
         <div className="text-center lg:text-left min-w-0 flex-1">
-          <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/20 border border-orange-500/30 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-300 backdrop-blur-sm">
-            <Clock className="h-3.5 w-3.5 animate-pulse text-amber-300" />
+          <div className="inline-flex items-center gap-2 rounded-full bg-[color:var(--countdown-accent)]/20 border border-[color:var(--countdown-accent)]/30 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[color:var(--countdown-accent-2)] backdrop-blur-sm">
+            <Clock className="h-3.5 w-3.5 animate-pulse text-[color:var(--countdown-accent-2)]" />
             <span>Événement de la Troupe</span>
           </div>
           <h2 className="mt-2 text-xl font-black tracking-tight text-white sm:text-2xl lg:text-3xl">
@@ -187,20 +187,20 @@ export function CountdownBanner({ isAdmin }: { isAdmin: boolean }) {
         <div className="flex flex-col items-center lg:items-end gap-3 shrink-0">
           <div className="flex items-center justify-center gap-1.5 sm:gap-2.5 flex-nowrap">
             <TimeCard value={time.days} label="Jours" />
-            <span className="font-display text-lg sm:text-2xl font-bold text-orange-400 select-none shrink-0">:</span>
+            <span className="font-display text-lg sm:text-2xl font-bold text-[color:var(--countdown-accent)] select-none shrink-0">:</span>
             <TimeCard value={time.hours} label="Heures" />
-            <span className="font-display text-lg sm:text-2xl font-bold text-orange-400 select-none shrink-0">:</span>
+            <span className="font-display text-lg sm:text-2xl font-bold text-[color:var(--countdown-accent)] select-none shrink-0">:</span>
             <TimeCard value={time.minutes} label="Minutes" />
-            <span className="font-display text-lg sm:text-2xl font-bold text-orange-400 select-none shrink-0">:</span>
+            <span className="font-display text-lg sm:text-2xl font-bold text-[color:var(--countdown-accent)] select-none shrink-0">:</span>
             <TimeCard value={time.seconds} label="Secondes" highlight />
           </div>
 
           {isAdmin && (
             <button
               onClick={openCreate}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white/90 backdrop-blur transition hover:border-orange-500 hover:bg-black/60 hover:text-white"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-black/40 px-3 py-1.5 text-xs font-semibold text-white/90 backdrop-blur transition hover:border-[color:var(--countdown-accent)] hover:bg-black/60 hover:text-white"
             >
-              <Plus className="h-3.5 w-3.5 text-amber-400" />
+              <Plus className="h-3.5 w-3.5 text-[color:var(--countdown-accent-2)]" />
               <span>Gérer / Créer des comptes à rebours</span>
             </button>
           )}
@@ -212,7 +212,7 @@ export function CountdownBanner({ isAdmin }: { isAdmin: boolean }) {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-orange-500" />
+              <Calendar className="h-5 w-5 text-primary" />
               Gestion des comptes à rebours
             </DialogTitle>
           </DialogHeader>
@@ -287,7 +287,7 @@ export function CountdownBanner({ isAdmin }: { isAdmin: boolean }) {
                 id="cd-active"
                 checked={formActive}
                 onChange={(e) => setFormActive(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-ring"
               />
               <Label htmlFor="cd-active" className="cursor-pointer text-xs font-normal">
                 Définir comme compte à rebours principal actif
@@ -297,7 +297,7 @@ export function CountdownBanner({ isAdmin }: { isAdmin: boolean }) {
               <Button type="button" variant="outline" size="sm" onClick={() => setManageOpen(false)}>
                 Fermer
               </Button>
-              <Button type="submit" size="sm" className="bg-orange-600 hover:bg-orange-500 text-text">
+              <Button type="submit" size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
                 Enregistrer dans la base
               </Button>
             </DialogFooter>
@@ -314,7 +314,7 @@ function TimeCard({ value, label, highlight = false }: { value: number; label: s
     <div
       className={`flex flex-col items-center justify-center rounded-xl border py-2 px-1.5 text-center backdrop-blur-md transition min-w-[56px] w-14 sm:min-w-[70px] sm:w-[72px] md:min-w-[76px] md:w-20 shrink-0 ${
         highlight
-          ? "border-orange-500/60 bg-gradient-to-b from-orange-600/30 to-orange-700/40 text-white shadow-lg"
+          ? "border-[color:var(--countdown-accent)]/60 bg-gradient-to-b from-[color:var(--countdown-accent)]/25 to-[color:var(--countdown-accent)]/40 text-white shadow-lg"
           : "border-white/15 bg-black/50 text-white"
       }`}
     >
