@@ -251,36 +251,34 @@ export function AdminUserList({
   return (
     <div className="space-y-6">
       {/* Top Banner / Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="flex items-center gap-4 rounded-2xl border border-border/80 bg-card p-4 shadow-sm">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <div className="flex flex-col items-start gap-1 rounded-2xl border border-border/80 bg-card p-3 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:p-4">
+          <div className="hidden h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary sm:flex">
             <Users className="h-6 w-6" />
           </div>
           <div>
             <div className="text-2xl font-black text-foreground">{totalCount}</div>
-            <div className="text-xs font-semibold text-muted-foreground">Membres inscrits</div>
+            <div className="text-xs font-semibold text-muted-foreground">Membres</div>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-sm">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/20 text-amber-700">
+        <div className="flex flex-col items-start gap-1 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-3 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:p-4">
+          <div className="hidden h-12 w-12 items-center justify-center rounded-xl bg-amber-500/20 text-amber-700 sm:flex">
             <Shield className="h-6 w-6" />
           </div>
           <div>
             <div className="text-2xl font-black text-amber-800">{adminCount}</div>
-            <div className="text-xs font-semibold text-amber-700">
-              Administrateurs & Staff (is_admin)
-            </div>
+            <div className="text-xs font-semibold text-amber-700">Admins</div>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 rounded-2xl border border-border/80 bg-card p-4 shadow-sm">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+        <div className="flex flex-col items-start gap-1 rounded-2xl border border-border/80 bg-card p-3 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:p-4">
+          <div className="hidden h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 sm:flex">
             <UserCheck className="h-6 w-6" />
           </div>
           <div>
             <div className="text-2xl font-black text-foreground">{scoutCount}</div>
-            <div className="text-xs font-semibold text-muted-foreground">Scouts participants</div>
+            <div className="text-xs font-semibold text-muted-foreground">Scouts</div>
           </div>
         </div>
       </div>
@@ -301,7 +299,7 @@ export function AdminUserList({
               placeholder="scout.ou.chef@gmail.com"
               value={adminEmailInput}
               onChange={(e) => setAdminEmailInput(e.target.value)}
-              className="pl-9 text-xs h-9"
+              className="pl-9 text-sm h-10 sm:h-9 sm:text-xs"
               required
             />
           </div>
@@ -309,7 +307,7 @@ export function AdminUserList({
             type="submit"
             disabled={addingEmail}
             size="sm"
-            className="font-bold text-xs gap-1.5 h-9 shrink-0"
+            className="font-bold text-xs gap-1.5 h-10 sm:h-9 shrink-0"
           >
             {addingEmail ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -330,13 +328,13 @@ export function AdminUserList({
               placeholder="Rechercher par nom, totem, patrouille ou e-mail…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 text-xs h-9"
+              className="pl-9 text-sm h-10 sm:h-9 sm:text-xs"
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             {/* Filter Role */}
-            <div className="flex items-center rounded-lg border bg-muted/40 p-0.5 text-xs">
+            <div className="flex w-full items-center rounded-lg border bg-muted/40 p-0.5 text-xs sm:w-auto">
               <button
                 type="button"
                 onClick={() => setRoleFilter("all")}
@@ -377,7 +375,7 @@ export function AdminUserList({
 
             {/* Filter Patrol */}
             <Select value={patrolFilter} onValueChange={setPatrolFilter}>
-              <SelectTrigger className="h-9 w-40 text-xs">
+              <SelectTrigger className="h-9 w-full text-xs sm:w-40">
                 <SelectValue placeholder="Toutes patrouilles" />
               </SelectTrigger>
               <SelectContent>
@@ -396,9 +394,9 @@ export function AdminUserList({
 
       {/* Users Table with Toggle Switch */}
       <div className="rounded-2xl border border-border/80 bg-card shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
+        <div className="md:overflow-x-auto">
+          <table className="block w-full text-left text-sm md:table">
+            <thead className="hidden md:table-header-group">
               <tr className="border-b bg-muted/50 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                 <th className="py-3 px-4">Membre / Scout</th>
                 <th className="py-3 px-4">Patrouille assignée</th>
@@ -411,10 +409,13 @@ export function AdminUserList({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/60">
+            <tbody className="block divide-y divide-border/60 md:table-row-group">
               {filteredProfiles.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="py-12 text-center text-muted-foreground">
+                <tr className="block md:table-row">
+                  <td
+                    colSpan={4}
+                    className="block py-12 text-center text-muted-foreground md:table-cell"
+                  >
                     <Users className="mx-auto h-8 w-8 text-muted-foreground/40 mb-2" />
                     <p className="font-semibold">Aucun membre ne correspond à vos filtres.</p>
                     <p className="text-xs mt-1">Modifiez vos termes de recherche.</p>
@@ -432,12 +433,12 @@ export function AdminUserList({
                     <tr
                       key={p.id}
                       className={cn(
-                        "hover:bg-muted/40 transition-colors",
+                        "grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 p-4 hover:bg-muted/40 transition-colors md:table-row md:p-0",
                         isAdm && "bg-amber-500/[0.02]",
                       )}
                     >
                       {/* Member Info */}
-                      <td className="py-3.5 px-4">
+                      <td className="col-span-2 block md:table-cell md:py-3.5 md:px-4">
                         <div className="flex items-center gap-3">
                           <div
                             className={cn(
@@ -491,14 +492,14 @@ export function AdminUserList({
                       </td>
 
                       {/* Patrol Select */}
-                      <td className="py-3.5 px-4">
+                      <td className="block md:table-cell md:py-3.5 md:px-4">
                         <Select
                           value={p.patrol_id || "none"}
                           onValueChange={(val) =>
                             handleChangePatrol(p.id, val === "none" ? null : val)
                           }
                         >
-                          <SelectTrigger className="h-8 w-44 text-xs font-semibold">
+                          <SelectTrigger className="h-10 w-full text-xs font-semibold md:h-8 md:w-44">
                             <SelectValue placeholder="Choisir patrouille" />
                           </SelectTrigger>
                           <SelectContent>
@@ -519,7 +520,7 @@ export function AdminUserList({
                       </td>
 
                       {/* Scout Year / Role status */}
-                      <td className="py-3.5 px-4">
+                      <td className="block self-center text-right md:table-cell md:py-3.5 md:px-4 md:text-left">
                         {p.is_chef || isStaffPatrol(currentPatrol) ? (
                           <Badge className="bg-amber-500/15 text-amber-700 text-[10px] font-bold">
                             Staff
@@ -538,8 +539,8 @@ export function AdminUserList({
                       </td>
 
                       {/* Toggle Switch column */}
-                      <td className="py-3.5 px-4 text-center">
-                        <div className="inline-flex flex-col items-center gap-1.5">
+                      <td className="col-span-2 block md:table-cell md:py-3.5 md:px-4 md:text-center">
+                        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/40 px-3 py-2 md:inline-flex md:flex-col md:justify-center md:gap-1.5 md:bg-transparent md:p-0">
                           <div className="flex items-center gap-2">
                             <Switch
                               id={`switch-admin-${p.id}`}
@@ -566,7 +567,7 @@ export function AdminUserList({
                             <button
                               type="button"
                               onClick={() => handleResetPassword(p)}
-                              className="text-[10px] font-semibold text-primary hover:underline"
+                              className="rounded-md px-1 py-1 text-xs font-semibold text-primary hover:underline md:py-0 md:text-[10px]"
                             >
                               Réinitialiser le mot de passe
                             </button>
