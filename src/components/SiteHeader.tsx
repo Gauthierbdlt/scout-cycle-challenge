@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import {
   History,
-  User,
+  CircleUserRound,
   Trophy,
-  Shield,
+  ShieldCheck,
   LogOut,
-  Flame,
+  Bike,
   LogIn,
-  Sparkles,
-  Map,
+  HandHeart,
+  MapPinned,
   Menu,
   X,
   ChevronRight,
@@ -24,9 +24,7 @@ interface NavItem {
   to: string;
   label: string;
   description: string;
-  icon: React.ComponentType<{ className?: string }>;
-  iconColor: string;
-  bgColor: string;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   requiresAuth?: boolean;
   requiresAdmin?: boolean;
 }
@@ -36,6 +34,11 @@ export function SiteHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // La page est pré-rendue sur « / » : on ne marque la page active qu'une fois
+  // dans le navigateur, sinon « Classement » resterait surligné partout.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const currentPath = mounted ? location.pathname : null;
 
   // Close mobile menu whenever navigating
   useEffect(() => {
@@ -54,58 +57,44 @@ export function SiteHeader() {
       label: "Classement",
       description: "Classement hebdomadaire des patrouilles et des scouts",
       icon: Trophy,
-      iconColor: "text-amber-400",
-      bgColor: "bg-amber-500/10",
     },
     {
       to: "/timeline",
       label: "Timeline",
       description: "Historique et grands événements de l'ALEZAN 42",
       icon: History,
-      iconColor: "text-emerald-400",
-      bgColor: "bg-emerald-500/10",
     },
     {
       to: "/carte",
       label: "Carte",
       description: "Carte interactive des zones roulées et courues (-200m protégés)",
-      icon: Map,
-      iconColor: "text-cyan-400",
-      bgColor: "bg-cyan-500/10",
+      icon: MapPinned,
       requiresAuth: true,
     },
     {
       to: "/solidarite",
       label: "Solidarité",
       description: "Actions solidaires et kilomètres partagés",
-      icon: Sparkles,
-      iconColor: "text-rose-400",
-      bgColor: "bg-rose-500/10",
+      icon: HandHeart,
     },
     {
       to: "/mes-km",
       label: "Mes km",
       description: "Enregistrer une sortie vélo ou course à pied",
-      icon: Flame,
-      iconColor: "text-orange-400",
-      bgColor: "bg-orange-500/10",
+      icon: Bike,
     },
     {
       to: "/profil",
       label: "Profil",
       description: "Mon profil scout, totem, qualificatif et patrouille",
-      icon: User,
-      iconColor: "text-sky-400",
-      bgColor: "bg-sky-500/10",
+      icon: CircleUserRound,
       requiresAuth: true,
     },
     {
       to: "/admin",
       label: "Admin",
       description: "Panneau de modération et gestion du staff",
-      icon: Shield,
-      iconColor: "text-amber-300",
-      bgColor: "bg-amber-500/15",
+      icon: ShieldCheck,
       requiresAdmin: true,
     },
   ];
@@ -150,36 +139,34 @@ export function SiteHeader() {
         </Link>
 
         {/* ============================================================== */}
-        {/* DESKTOP NAVIGATION: Logos only by default, expands text on hover */}
+        {/* NAVIGATION ORDINATEUR : icônes monochromes, libellé de la page active */}
         {/* ============================================================== */}
-        <nav className="hidden md:flex items-center gap-1.5">
-          <div className="flex items-center gap-1 rounded-2xl bg-white/[0.06] border border-white/10 p-1">
+        <nav className="hidden md:flex items-center gap-2">
+          <div className="flex items-center gap-0.5 rounded-xl border border-white/10 bg-white/[0.04] p-1">
             {visibleItems.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.to;
+              const isActive = currentPath === item.to;
 
               return (
                 <Link
                   key={item.to}
                   to={item.to}
                   title={item.label}
+                  aria-label={item.label}
+                  aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "group relative flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold transition-all duration-300",
+                    "relative flex h-9 items-center gap-2 rounded-lg px-2.5 text-[13px] font-semibold transition-colors duration-150",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40",
                     isActive
-                      ? "bg-white/20 text-white shadow-xs"
-                      : "text-white/70 hover:bg-white/10 hover:text-white",
-                    item.requiresAdmin &&
-                      "bg-amber-500/10 border border-amber-500/25 text-amber-300 hover:bg-amber-500/20",
+                      ? "bg-white text-[var(--header)] shadow-sm"
+                      : "text-white/65 hover:bg-white/[0.08] hover:text-white",
                   )}
                 >
-                  <Icon
-                    className={cn(
-                      "h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-115",
-                      item.iconColor,
-                    )}
-                  />
-                  {/* Text hidden by default, smoothly expands on hover */}
-                  <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 ease-out group-hover:max-w-[120px] group-hover:opacity-100 group-hover:pl-0.5">
+                  <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
+                  {/* Libellé : toujours visible pour la page active, sur grand écran pour les autres */}
+                  <span
+                    className={cn("whitespace-nowrap", isActive ? "inline" : "hidden xl:inline")}
+                  >
                     {item.label}
                   </span>
                 </Link>
@@ -195,12 +182,10 @@ export function SiteHeader() {
                 variant="ghost"
                 onClick={handleSignOut}
                 title="Déconnexion"
-                className="group relative gap-1.5 text-xs text-white/80 hover:bg-rose-500/20 hover:text-rose-200 transition-all rounded-xl px-2.5 py-1.5"
+                aria-label="Déconnexion"
+                className="h-9 rounded-lg px-2.5 text-white/65 transition-colors hover:bg-white/[0.08] hover:text-white"
               >
-                <LogOut className="h-4 w-4 text-rose-400 shrink-0 transition-transform group-hover:scale-115" />
-                <span className="max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-all duration-300 ease-out group-hover:max-w-[120px] group-hover:opacity-100">
-                  Déconnexion
-                </span>
+                <LogOut className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
               </Button>
             ) : (
               <Button
@@ -302,11 +287,13 @@ export function SiteHeader() {
                   <div className="flex items-center gap-3">
                     <span
                       className={cn(
-                        "grid h-8 w-8 shrink-0 place-items-center rounded-lg",
-                        item.bgColor,
+                        "grid h-9 w-9 shrink-0 place-items-center rounded-lg border",
+                        isActive
+                          ? "border-transparent bg-white text-[var(--header)]"
+                          : "border-white/10 bg-white/[0.06] text-white/80",
                       )}
                     >
-                      <Icon className={cn("h-4 w-4", item.iconColor)} />
+                      <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
                     </span>
                     <div>
                       <p className="text-sm font-bold leading-tight">{item.label}</p>
