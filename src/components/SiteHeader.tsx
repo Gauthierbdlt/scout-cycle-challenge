@@ -144,7 +144,7 @@ export function SiteHeader() {
               </span>
             </div>
             <p className="text-[11px] text-amber-300/80 font-medium tracking-wide leading-none hidden sm:block">
-              by Aquila
+              by Aquila 🦅
             </p>
           </div>
         </Link>
