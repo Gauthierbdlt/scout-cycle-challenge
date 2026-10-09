@@ -19,10 +19,21 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { GroupRidePicker, type GroupChoice } from "@/components/GroupRidePicker";
+import {
+  buildEncouragement,
+  type EncouragementInput,
+  type PastActivity,
+} from "@/lib/encouragement";
 import { removeStorageFiles } from "@/lib/proofStorage";
 import { parseElevation } from "@/lib/jerseys";
 import { useAuth } from "@/lib/useAuth";
-import { db, type Patrol, type ActivitySport, getPatrolEmblem } from "@/lib/database";
+import {
+  db,
+  type Patrol,
+  type ActivitySport,
+  getActivitySport,
+  getPatrolEmblem,
+} from "@/lib/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -466,25 +477,87 @@ export function DailyDistanceForm({
         db.updateProfile(targetUserId, { patrol_id: selectedPatrolId });
       }
 
-      const sportLabel = sport === "course" ? "Course à pied" : "Sortie vélo";
+      // Phrase d'encouragement : historique du scout + état du groupe Peloton
+      const encouragement = await (async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const sb = supabase as any;
+        let history: PastActivity[] = [];
+        try {
+          const { data } = await sb
+            .from("activities")
+            .select("id, km, ride_date, status, note")
+            .eq("user_id", targetUserId);
+          history = (
+            (data ?? []) as {
+              id: string;
+              km: number;
+              ride_date: string;
+              status: string;
+              note: string | null;
+            }[]
+          )
+            .filter((a) => a.id !== createdData?.id)
+            .map((a) => ({ ...a, sport: getActivitySport(a) }));
+        } catch {
+          // pas d'historique : phrase plus simple
+        }
+        let group: EncouragementInput["group"] = null;
+        const linkedGroup = (createdData?.group_ride_id as string | null | undefined) ?? null;
+        if (linkedGroup) {
+          try {
+            const [{ data: members }, { data: linked }] = await Promise.all([
+              sb.from("group_ride_members").select("user_id").eq("group_id", linkedGroup),
+              sb
+                .from("activities")
+                .select("user_id, status")
+                .eq("group_ride_id", linkedGroup)
+                .neq("user_id", targetUserId),
+            ]);
+            group = {
+              mode: groupChoice.mode === "rejoindre" ? "rejoindre" : "nouveau",
+              expectedSize: (members ?? []).length,
+              approvedOthers: new Set(
+                ((linked ?? []) as { user_id: string; status: string }[])
+                  .filter((a) => a.status === "approved")
+                  .map((a) => a.user_id),
+              ).size,
+            };
+          } catch {
+            // groupe illisible : pas de ligne Peloton
+          }
+        }
+        return buildEncouragement({
+          km: kmNumber,
+          elevationM: elevation,
+          sport,
+          rideDate,
+          status: finalStatus,
+          patrolName,
+          patrolEmoji: selectedPatrol ? getPatrolEmblem(selectedPatrol.name) : null,
+          history,
+          group,
+        });
+      })();
+
       toast.success(
         <div className="space-y-1">
           <p className="font-bold flex items-center gap-1.5 text-sm">
-            <Sparkles className="h-4 w-4 text-amber-500" />
-            {sportLabel}{" "}
-            {finalStatus === "approved" ? "validée avec succès !" : "enregistrée (en attente) !"}
+            <span className="text-lg leading-none">{encouragement.emoji}</span>
+            {encouragement.title}
           </p>
-          <p className="text-xs text-muted-foreground">
-            <strong>+{kmNumber} km</strong> ({sport === "course" ? "🏃 Course" : "🚴 Vélo"})
-            attribués à la patrouille <strong>{patrolName}</strong> ({rideDate})
-          </p>
+          {encouragement.lines.map((line) => (
+            <p key={line} className="text-xs text-muted-foreground">
+              {line}
+            </p>
+          ))}
           {finalStatus === "pending" && (
             <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              En attente de validation par le staff (photo jointe)
+              Tes km compteront dès qu&apos;un chef aura validé ta photo
             </p>
           )}
         </div>,
+        { duration: 9000 },
       );
 
       setDistanceKm("");
