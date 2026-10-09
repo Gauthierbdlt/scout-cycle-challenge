@@ -10,7 +10,12 @@ export type SeasonalThemeId =
   | "paques"
   | "printemps"
   | "ete"
-  | "course24h";
+  | "course24h"
+  | "hiver"
+  | "carnaval"
+  | "nationale"
+  | "foot"
+  | "tennis";
 
 export type ThemeMode = "auto" | "manuel";
 export type ThemeIntensity = "festif" | "discret";
@@ -60,6 +65,22 @@ export const SEASONAL_THEMES: SeasonalThemeMeta[] = [
     swatch: ["#10382b", "#d4343a", "#f5c542"],
   },
   {
+    id: "hiver",
+    label: "Hiver",
+    emoji: "⛄",
+    description: "Bleu glacé, neige douce et stalactites",
+    period: "7 janv. → 12 mars (hors fêtes)",
+    swatch: ["#f1f6fb", "#3b78b8", "#cfe8f7"],
+  },
+  {
+    id: "carnaval",
+    label: "Carnaval",
+    emoji: "🎭",
+    description: "Confettis, ballons et fanions multicolores",
+    period: "Du vendredi au mardi gras (date variable)",
+    swatch: ["#fbf4fe", "#c026a3", "#facc15"],
+  },
+  {
     id: "valentin",
     label: "Saint-Valentin",
     emoji: "💘",
@@ -92,12 +113,36 @@ export const SEASONAL_THEMES: SeasonalThemeMeta[] = [
     swatch: ["#fff9e8", "#0d9bd8", "#f7b731"],
   },
   {
+    id: "nationale",
+    label: "Fête nationale",
+    emoji: "🇧🇪",
+    description: "Noir, jaune, rouge, drapeaux et étincelles",
+    period: "18 → 21 juillet",
+    swatch: ["#fffbe6", "#ef3340", "#fdda24"],
+  },
+  {
     id: "course24h",
     label: "24h vélo",
     emoji: "🏁",
     description: "Mode course de folie : damier, cyclistes lancés à fond",
     period: "13 → 21 mars (24h les 20–21 mars)",
     swatch: ["#111111", "#facc15", "#dc2626"],
+  },
+  {
+    id: "foot",
+    label: "Match de foot",
+    emoji: "⚽",
+    description: "Pelouse de nuit, ballon qui roule, cartons et confettis",
+    period: "Manuel : le jour du match",
+    swatch: ["#16361f", "#e6f03a", "#dc2626"],
+  },
+  {
+    id: "tennis",
+    label: "Match de tennis",
+    emoji: "🎾",
+    description: "Vert gazon, balles jaunes qui rebondissent, filet",
+    period: "Manuel : le jour du match",
+    swatch: ["#f5fbf3", "#1f6b3b", "#d9f23d"],
   },
 ];
 
@@ -155,9 +200,20 @@ export function themeForDate(date: Date): SeasonalThemeId {
   const to = new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() + 1);
   if (day >= from && day <= to) return "paques";
 
+  // Carnaval : du vendredi au mardi gras (47 jours avant Pâques)
+  const mardiGras = new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 47);
+  const carnavalFrom = new Date(
+    mardiGras.getFullYear(),
+    mardiGras.getMonth(),
+    mardiGras.getDate() - 4,
+  );
+  if (day >= carnavalFrom && day <= mardiGras) return "carnaval";
+
   if (inRange(v, 207, 214)) return "valentin";
+  if (inRange(v, 718, 721)) return "nationale";
   if (inRange(v, 1020, 1102)) return "halloween";
   if (v >= 1201 || v <= 106) return "noel";
+  if (inRange(v, 107, 312)) return "hiver";
   if (inRange(v, 921, 1019) || inRange(v, 1103, 1130)) return "automne";
   if (inRange(v, 621, 920)) return "ete";
   if (inRange(v, 321, 620)) return "printemps";

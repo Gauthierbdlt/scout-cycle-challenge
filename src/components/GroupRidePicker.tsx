@@ -10,7 +10,14 @@ import { pelotonMultiplier } from "@/lib/peloton";
 export type GroupChoice =
   | { mode: "seul" }
   | { mode: "nouveau"; companions: string[] }
-  | { mode: "rejoindre"; groupId: string; rideDate: string; sport: "velo" | "course" };
+  | {
+      mode: "rejoindre";
+      groupId: string;
+      rideDate: string;
+      sport: "velo" | "course";
+      /** nombre de personnes prévues dans la sortie (toi comprise) */
+      size?: number;
+    };
 
 type Member = { id: string; name: string };
 export type Invitation = {
@@ -171,6 +178,7 @@ export function GroupRidePicker({
                     groupId: first.groupId,
                     rideDate: first.rideDate,
                     sport: first.sport,
+                    size: first.otherNames.length + 1,
                   });
               }}
             >
@@ -264,6 +272,7 @@ export function GroupRidePicker({
                     groupId: inv.groupId,
                     rideDate: inv.rideDate,
                     sport: inv.sport,
+                    size: inv.otherNames.length + 1,
                   })
                 }
               />
