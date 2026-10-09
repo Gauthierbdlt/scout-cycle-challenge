@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useSeasonalTheme } from "@/context/SeasonalThemeContext";
 import type { SeasonalThemeId } from "@/lib/seasonalTheme";
 
-type Mode = "fall" | "fly";
+type Mode = "fall" | "fly" | "race";
 
 interface ParticleSpec {
   chars: string[];
@@ -13,8 +13,10 @@ interface ParticleSpec {
   /** durée de l'animation en secondes [min, max] */
   duration: [number, number];
   opacity?: number;
-  /** hauteur de vol en % de l'écran [min, max] (mode "fly") */
+  /** hauteur de vol en % de l'écran [min, max] (modes "fly" et "race") */
   altitude?: [number, number];
+  /** petits bonds pendant la traversée (lapin) */
+  bounce?: boolean;
 }
 
 interface Corner {
@@ -28,9 +30,105 @@ interface Decor {
   corners: Corner[];
   sun?: boolean;
   waves?: boolean;
+  /** tapis au sol (répété sur toute la largeur) */
+  ground?: string;
+  /** traits de vitesse (24h vélo) */
+  streaks?: number;
 }
 
 const DECOR: Record<Exclude<SeasonalThemeId, "default">, Decor> = {
+  automne: {
+    ground: "🍂🍁🍂🍃🍁🍂",
+    particles: [
+      {
+        chars: ["🍂", "🍁", "🍂", "🍃"],
+        mode: "fall",
+        count: 16,
+        size: [16, 26],
+        duration: [11, 22],
+        opacity: 0.9,
+      },
+    ],
+    corners: [
+      { char: "🦔", className: "bottom-5 left-4", size: 30 },
+      { char: "🍄", className: "bottom-5 right-5", size: 26 },
+    ],
+  },
+  valentin: {
+    particles: [
+      {
+        chars: ["💕", "❤️", "💗", "💖"],
+        mode: "fall",
+        count: 16,
+        size: [14, 24],
+        duration: [10, 20],
+        opacity: 0.85,
+      },
+    ],
+    corners: [
+      { char: "💌", className: "bottom-2 left-3", size: 32 },
+      { char: "🌹", className: "bottom-2 right-4", size: 30 },
+    ],
+  },
+  paques: {
+    ground: "🌱🌿🌼🌱🌿🌷",
+    particles: [
+      {
+        chars: ["🌼", "🌸"],
+        mode: "fall",
+        count: 8,
+        size: [14, 20],
+        duration: [14, 24],
+        opacity: 0.8,
+      },
+      {
+        chars: ["🐇"],
+        mode: "race",
+        count: 1,
+        size: [30, 30],
+        duration: [16, 16],
+        altitude: [90, 90],
+        bounce: true,
+      },
+      {
+        chars: ["🐥"],
+        mode: "fly",
+        count: 2,
+        size: [18, 22],
+        duration: [28, 40],
+        altitude: [20, 60],
+      },
+    ],
+    corners: [
+      { char: "🧺", className: "bottom-5 left-4", size: 32 },
+      { char: "🐣", className: "bottom-5 right-5", size: 28 },
+    ],
+  },
+  course24h: {
+    streaks: 7,
+    particles: [
+      {
+        chars: ["🚴💨", "🚴‍♀️💨", "🚴💨", "🚵💨"],
+        mode: "race",
+        count: 6,
+        size: [28, 40],
+        duration: [5, 11],
+        altitude: [84, 94],
+      },
+      {
+        chars: ["🎉", "🏁", "✨"],
+        mode: "fall",
+        count: 10,
+        size: [12, 18],
+        duration: [8, 14],
+        opacity: 0.75,
+      },
+    ],
+    corners: [
+      { char: "🏆", className: "top-20 left-3", size: 30 },
+      { char: "⏱️", className: "top-20 right-4", size: 26 },
+    ],
+  },
   halloween: {
     particles: [
       {
@@ -133,7 +231,7 @@ function rnd(seed: number) {
 const between = (seed: number, [min, max]: [number, number]) => min + rnd(seed) * (max - min);
 
 export function SeasonalDecor() {
-  const { theme } = useSeasonalTheme();
+  const { theme, animated } = useSeasonalTheme();
   const decor = theme === "default" ? null : DECOR[theme];
 
   const particles = useMemo(() => {
@@ -147,7 +245,9 @@ export function SeasonalDecor() {
           mode: spec.mode,
           char: spec.chars[i % spec.chars.length],
           left: spec.mode === "fall" ? `${rnd(seed + 2) * 100}%` : undefined,
-          top: spec.mode === "fly" ? `${between(seed + 3, spec.altitude ?? [10, 70])}%` : undefined,
+          top:
+            spec.mode === "fall" ? undefined : `${between(seed + 3, spec.altitude ?? [10, 70])}%`,
+          bounce: !!spec.bounce,
           size: between(seed + 4, spec.size),
           duration,
           // délai négatif : la scène est déjà « en cours » à l'arrivée
@@ -160,11 +260,35 @@ export function SeasonalDecor() {
     );
   }, [decor]);
 
+  const streaks = useMemo(
+    () =>
+      Array.from({ length: decor?.streaks ?? 0 }, (_, i) => ({
+        key: i,
+        top: `${12 + rnd(500 + i) * 76}%`,
+        duration: 0.9 + rnd(600 + i) * 1.6,
+        delay: -rnd(700 + i) * 3,
+      })),
+    [decor],
+  );
+
   if (!decor) return null;
 
   return (
-    <div className="festive-layer" aria-hidden="true">
+    <div className={`festive-layer${animated ? "" : " festive-still"}`} aria-hidden="true">
       {decor.waves && <div className="festive-waves" />}
+      {decor.ground && <div className="festive-ground">{decor.ground.repeat(40)}</div>}
+      {animated &&
+        streaks.map((st) => (
+          <span
+            key={`streak-${st.key}`}
+            className="festive-streak"
+            style={{
+              top: st.top,
+              animationDuration: `${st.duration}s`,
+              animationDelay: `${st.delay}s`,
+            }}
+          />
+        ))}
       {decor.sun && <div className="festive-sun">☀️</div>}
       {decor.corners.map((c) => (
         <span
@@ -175,7 +299,7 @@ export function SeasonalDecor() {
           {c.char}
         </span>
       ))}
-      {particles.map((p) => (
+      {(animated ? particles : []).map((p) => (
         <span
           key={p.key}
           className={`festive-particle ${p.mode}`}
@@ -193,7 +317,7 @@ export function SeasonalDecor() {
             } as React.CSSProperties
           }
         >
-          {p.char}
+          {p.bounce ? <span className="festive-bounce">{p.char}</span> : p.char}
         </span>
       ))}
     </div>
@@ -204,11 +328,14 @@ const VINE = "🌿🌸🌿🌼🌿🌷".repeat(30);
 
 /** Bandeau accroché sous l'en-tête du site (guirlande, toile d'araignée, etc.). */
 export function HeaderTrim() {
-  const { theme } = useSeasonalTheme();
+  const { theme, animated } = useSeasonalTheme();
   if (theme === "default") return null;
 
   return (
-    <div className={`festive-trim festive-trim-${theme}`} aria-hidden="true">
+    <div
+      className={`festive-trim festive-trim-${theme}${animated ? "" : " festive-still"}`}
+      aria-hidden="true"
+    >
       {theme === "halloween" && (
         <>
           <span className="festive-web">🕸️</span>
@@ -219,6 +346,9 @@ export function HeaderTrim() {
         </>
       )}
       {theme === "printemps" && VINE}
+      {theme === "valentin" && "💗❤️💕".repeat(60)}
+      {theme === "paques" && "🥚🐣🌷🥚🐰🌼".repeat(40)}
+      {theme === "automne" && "🍁🍂🍃".repeat(60)}
     </div>
   );
 }

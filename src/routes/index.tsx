@@ -42,6 +42,7 @@ import { JerseysPanel } from "@/components/JerseysPanel";
 import { ScoutSportifCard } from "@/components/ScoutSportifCard";
 import { PelotonPanel } from "@/components/PelotonPanel";
 import { BirthdayBanner } from "@/components/BirthdayBanner";
+import { useSeasonalTheme } from "@/context/SeasonalThemeContext";
 import { computePeloton, type PelotonUserScore } from "@/lib/peloton";
 
 interface LeaderboardItem {
@@ -128,6 +129,7 @@ function FilterPill({
 
 function Index() {
   const { user, profile, isAdmin } = useAuth();
+  const { background: themeBackground } = useSeasonalTheme();
   const [sportMode, setSportMode] = useState<SportMode>("velo");
   const [period, setPeriod] = useState<Period>("week");
   const [cat, setCat] = useState<GenderCat>("all");
@@ -434,11 +436,18 @@ function Index() {
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-bark text-bark-foreground">
         <img
-          src={hero}
-          alt="Le drapeau de la troupe au bord du circuit des 24h vélo"
-          className="absolute inset-0 h-full w-full object-cover object-[75%_68%] md:object-[50%_60%] opacity-70 transition-opacity"
+          src={themeBackground ?? hero}
+          alt={
+            themeBackground
+              ? "Photo de la troupe"
+              : "Le drapeau de la troupe au bord du circuit des 24h vélo"
+          }
+          className={cn(
+            "absolute inset-0 h-full w-full object-cover opacity-70 transition-opacity",
+            themeBackground ? "object-center" : "object-[75%_68%] md:object-[50%_60%]",
+          )}
         />
-        {/* Voile orange pour atténuer les couleurs de la photo */}
+        {/* Voile aux couleurs du thème pour atténuer les couleurs de la photo */}
         <div className="absolute inset-0 bg-primary/35 mix-blend-multiply" />
         <div className="absolute inset-0 bg-gradient-to-t from-bark via-bark/55 to-transparent" />
         <div className="relative mx-auto max-w-6xl px-4 py-16 md:py-24">

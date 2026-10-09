@@ -12,11 +12,11 @@ create function auth.uid() returns uuid language sql stable as
   $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
 grant execute on function auth.uid() to anon, authenticated;
 
-create table storage.buckets (id text primary key, public boolean);
+create table storage.buckets (id text primary key, public boolean, name text, file_size_limit bigint, allowed_mime_types text[]);
 create table storage.objects (id uuid primary key default gen_random_uuid(), bucket_id text, name text);
 alter table storage.objects enable row level security;
 grant select, insert, update, delete on storage.objects to anon, authenticated;
-insert into storage.buckets values ('proofs', true);
+insert into storage.buckets (id, public) values ('proofs', true);
 
 create type app_role as enum ('admin','user');
 create type patrol_category as enum ('homme','femme');

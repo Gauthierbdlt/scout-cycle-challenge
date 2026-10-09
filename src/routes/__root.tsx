@@ -15,6 +15,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { AuthProvider } from "@/context/AuthContext";
 import { SeasonalThemeProvider } from "@/context/SeasonalThemeContext";
 import { SeasonalDecor } from "@/components/SeasonalDecor";
+import { AnimationToggle } from "@/components/AnimationToggle";
 import { THEME_BOOT_SCRIPT } from "@/lib/seasonalTheme";
 import { supabase } from "@/integrations/supabase/client";
 import appCss from "../styles.css?url";
@@ -169,6 +170,7 @@ function RootComponent() {
               dateStyle: "short",
               timeStyle: "short",
             })}
+            <AnimationToggle />
           </footer>
           <Toaster />
           <SeasonalDecor />
