@@ -17,6 +17,7 @@ import {
   Edit3,
   FileText,
   Award,
+  Palette,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,7 @@ import {
 import { AdminUserList } from "@/components/AdminUserList";
 import { ExportDialog } from "@/components/ExportDialog";
 import { CATEGORY_LABELS, type PatrolCategory, TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
+import { SeasonalThemeAdmin } from "@/components/SeasonalThemeAdmin";
 import { ScoutSportifAdmin, type SportifBadge } from "@/components/ScoutSportifAdmin";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -374,7 +376,7 @@ function Admin() {
         </div>
 
         <Tabs defaultValue="validations" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 rounded-xl p-1 bg-muted">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 rounded-xl p-1 bg-muted">
             <TabsTrigger value="validations" className="rounded-lg text-xs font-bold gap-1.5">
               <Check className="h-4 w-4" />
               Sorties ({pending.length})
@@ -394,6 +396,10 @@ function Admin() {
             <TabsTrigger value="scouts" className="rounded-lg text-xs font-bold gap-1.5">
               <Users className="h-4 w-4" />
               Membres
+            </TabsTrigger>
+            <TabsTrigger value="fetes" className="rounded-lg text-xs font-bold gap-1.5">
+              <Palette className="h-4 w-4" />
+              Fêtes
             </TabsTrigger>
           </TabsList>
 
@@ -762,6 +768,11 @@ function Admin() {
               currentUserId={user?.id}
               currentUserEmail={user?.email}
             />
+          </TabsContent>
+
+          {/* Tab 6: Thème de fête */}
+          <TabsContent value="fetes" className="space-y-6">
+            <SeasonalThemeAdmin />
           </TabsContent>
         </Tabs>
       </main>

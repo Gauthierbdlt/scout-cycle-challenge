@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/useAuth";
 import { cn } from "@/lib/utils";
 import logoAlezan from "@/assets/logo-alezan.png";
+import { HeaderTrim } from "@/components/SeasonalDecor";
 
 interface NavItem {
   to: string;
@@ -116,7 +117,8 @@ export function SiteHeader() {
   });
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#1e231e]/95 text-white shadow-lg backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[var(--header)]/95 text-white shadow-lg backdrop-blur-md">
+      <HeaderTrim />
       {/* Main Bar */}
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:py-3">
         {/* Brand Logo & by Aquila */}

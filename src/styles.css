@@ -2,7 +2,7 @@
 @source "../src";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *, [data-theme="halloween"] *, [data-theme="noel"] *));
 
 @theme inline {
   --font-display: "Archivo Black", system-ui, sans-serif;
@@ -59,6 +59,7 @@
   --bark: oklch(0.3 0.06 45);
   --bark-foreground: oklch(0.95 0.03 75);
   --success: oklch(0.55 0.13 145);
+  --header: #1e231e;
 }
 
 @layer base {
@@ -75,5 +76,293 @@
   h3 {
     font-family: var(--font-display);
     letter-spacing: -0.01em;
+  }
+}
+
+/* =====================================================================
+   Thèmes de fête — choisis par un admin (table site_settings, clé "theme").
+   <html data-theme="halloween|noel|printemps|ete"> ; absent = standard.
+   Ils redéfinissent les mêmes variables que :root : tout le site suit.
+   ===================================================================== */
+[data-theme="halloween"] {
+  color-scheme: dark;
+  --background: oklch(0.2 0.045 300);
+  --foreground: oklch(0.93 0.03 70);
+  --card: oklch(0.25 0.055 300);
+  --card-foreground: oklch(0.93 0.03 70);
+  --popover: oklch(0.25 0.055 300);
+  --popover-foreground: oklch(0.93 0.03 70);
+  --primary: oklch(0.74 0.17 55);
+  --primary-foreground: oklch(0.2 0.045 300);
+  --secondary: oklch(0.32 0.07 300);
+  --secondary-foreground: oklch(0.92 0.03 70);
+  --muted: oklch(0.29 0.05 300);
+  --muted-foreground: oklch(0.74 0.05 300);
+  --accent: oklch(0.46 0.16 300);
+  --accent-foreground: oklch(0.97 0.01 300);
+  --destructive: oklch(0.65 0.22 25);
+  --border: oklch(0.38 0.06 300);
+  --input: oklch(0.38 0.06 300);
+  --ring: oklch(0.74 0.17 55);
+  --bark: oklch(0.15 0.04 300);
+  --bark-foreground: oklch(0.93 0.03 70);
+  --success: oklch(0.72 0.16 145);
+  --header: #140d1c;
+}
+[data-theme="noel"] {
+  color-scheme: dark;
+  --background: oklch(0.24 0.05 165);
+  --foreground: oklch(0.96 0.02 90);
+  --card: oklch(0.29 0.06 165);
+  --card-foreground: oklch(0.96 0.02 90);
+  --popover: oklch(0.29 0.06 165);
+  --popover-foreground: oklch(0.96 0.02 90);
+  --primary: oklch(0.58 0.21 25);
+  --primary-foreground: oklch(0.98 0.01 90);
+  --secondary: oklch(0.34 0.06 165);
+  --secondary-foreground: oklch(0.96 0.02 90);
+  --muted: oklch(0.32 0.05 165);
+  --muted-foreground: oklch(0.78 0.05 150);
+  --accent: oklch(0.82 0.15 90);
+  --accent-foreground: oklch(0.25 0.06 80);
+  --destructive: oklch(0.62 0.22 25);
+  --border: oklch(0.42 0.06 165);
+  --input: oklch(0.42 0.06 165);
+  --ring: oklch(0.82 0.15 90);
+  --bark: oklch(0.18 0.05 165);
+  --bark-foreground: oklch(0.96 0.02 90);
+  --success: oklch(0.72 0.17 145);
+  --header: #0d2a1f;
+}
+[data-theme="printemps"] {
+  --background: oklch(0.975 0.025 140);
+  --foreground: oklch(0.3 0.05 150);
+  --card: oklch(0.995 0.01 120);
+  --card-foreground: oklch(0.3 0.05 150);
+  --popover: oklch(0.995 0.01 120);
+  --popover-foreground: oklch(0.3 0.05 150);
+  --primary: oklch(0.65 0.2 355);
+  --primary-foreground: oklch(0.99 0.01 350);
+  --secondary: oklch(0.93 0.05 140);
+  --secondary-foreground: oklch(0.3 0.06 150);
+  --muted: oklch(0.94 0.03 140);
+  --muted-foreground: oklch(0.5 0.05 150);
+  --accent: oklch(0.86 0.12 130);
+  --accent-foreground: oklch(0.3 0.07 140);
+  --border: oklch(0.88 0.05 140);
+  --input: oklch(0.88 0.05 140);
+  --ring: oklch(0.65 0.2 355);
+  --bark: oklch(0.35 0.07 150);
+  --bark-foreground: oklch(0.97 0.02 130);
+  --success: oklch(0.6 0.15 145);
+  --header: #1f3a2a;
+}
+[data-theme="ete"] {
+  --background: oklch(0.985 0.03 95);
+  --foreground: oklch(0.28 0.05 240);
+  --card: oklch(0.995 0.015 95);
+  --card-foreground: oklch(0.28 0.05 240);
+  --popover: oklch(0.995 0.015 95);
+  --popover-foreground: oklch(0.28 0.05 240);
+  --primary: oklch(0.65 0.15 235);
+  --primary-foreground: oklch(0.99 0.01 235);
+  --secondary: oklch(0.93 0.05 220);
+  --secondary-foreground: oklch(0.28 0.06 240);
+  --muted: oklch(0.95 0.03 95);
+  --muted-foreground: oklch(0.5 0.05 240);
+  --accent: oklch(0.88 0.14 90);
+  --accent-foreground: oklch(0.3 0.07 80);
+  --border: oklch(0.88 0.05 215);
+  --input: oklch(0.88 0.05 215);
+  --ring: oklch(0.65 0.15 235);
+  --bark: oklch(0.3 0.07 240);
+  --bark-foreground: oklch(0.97 0.02 95);
+  --success: oklch(0.6 0.14 160);
+  --header: #0f3b57;
+}
+
+body {
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease;
+}
+
+/* ---------- Décorations (composants SeasonalDecor / HeaderTrim) ---------- */
+.festive-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+  pointer-events: none;
+}
+.festive-particle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  line-height: 1;
+  will-change: transform;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.festive-particle.fall {
+  animation-name: festive-fall;
+}
+.festive-particle.fly {
+  animation-name: festive-fly;
+}
+@keyframes festive-fall {
+  0% {
+    transform: translate3d(0, -12vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: var(--op, 0.85);
+  }
+  92% {
+    opacity: var(--op, 0.85);
+  }
+  100% {
+    transform: translate3d(var(--drift, 30px), 108vh, 0) rotate(var(--spin, 360deg));
+    opacity: 0;
+  }
+}
+@keyframes festive-fly {
+  0% {
+    transform: translate3d(-12vw, 0, 0);
+  }
+  50% {
+    transform: translate3d(50vw, var(--wobble, -40px), 0);
+  }
+  100% {
+    transform: translate3d(112vw, 0, 0);
+  }
+}
+@keyframes festive-sway {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+@keyframes festive-twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+@keyframes festive-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.festive-sun {
+  position: absolute;
+  top: 4.5rem;
+  right: 0.75rem;
+  font-size: 3rem;
+  line-height: 1;
+  animation: festive-spin 90s linear infinite;
+  filter: drop-shadow(0 0 14px rgb(250 204 21 / 0.6));
+}
+.festive-corner {
+  position: absolute;
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.25));
+}
+.festive-waves {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 16px;
+  opacity: 0.35;
+  background: radial-gradient(circle at 14px 16px, transparent 12px, var(--primary) 13px) 0 0 / 28px
+    16px repeat-x;
+}
+
+/* Bandeau accroché sous l'en-tête */
+.festive-trim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 30px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.festive-trim-noel::before,
+.festive-trim-noel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  animation: festive-twinkle 1.6s ease-in-out infinite;
+}
+.festive-trim-noel::before {
+  background:
+    linear-gradient(#14532d, #14532d) 0 3px / 100% 2px no-repeat,
+    radial-gradient(circle at 14px 14px, #ef4444 5px, transparent 6px) 0 0 / 56px 30px repeat-x,
+    radial-gradient(circle at 42px 14px, #3b82f6 5px, transparent 6px) 0 0 / 56px 30px repeat-x;
+}
+.festive-trim-noel::after {
+  animation-delay: 0.8s;
+  background:
+    radial-gradient(circle at 28px 14px, #fbbf24 5px, transparent 6px) 0 0 / 56px 30px repeat-x,
+    radial-gradient(circle at 0 14px, #22c55e 5px, transparent 6px) 0 0 / 56px 30px repeat-x;
+}
+.festive-trim-ete {
+  height: 14px;
+  background: radial-gradient(circle at 14px 0, var(--header) 13px, transparent 14px) 0 0 / 28px
+    14px repeat-x;
+}
+.festive-trim-printemps {
+  height: 22px;
+  font-size: 15px;
+  line-height: 22px;
+  white-space: nowrap;
+  letter-spacing: 2px;
+}
+.festive-web {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 2.25rem;
+  line-height: 1;
+  opacity: 0.85;
+}
+.festive-spider {
+  position: absolute;
+  top: 0;
+  right: 14%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: top center;
+  animation: festive-sway 3.5s ease-in-out infinite;
+}
+.festive-spider i {
+  width: 1px;
+  height: 22px;
+  background: rgb(255 255 255 / 0.55);
+}
+.festive-spider b {
+  font-size: 1.25rem;
+  font-weight: normal;
+  line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .festive-particle {
+    display: none;
+  }
+  .festive-sun,
+  .festive-spider,
+  .festive-trim-noel::before,
+  .festive-trim-noel::after {
+    animation: none;
   }
 }
