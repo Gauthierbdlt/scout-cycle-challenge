@@ -131,6 +131,8 @@ export type Database = {
       };
       profiles: {
         Row: {
+          birth_day: number | null;
+          birth_month: number | null;
           created_at: string;
           email: string | null;
           full_name: string | null;
@@ -144,6 +146,8 @@ export type Database = {
           totem: string | null;
         };
         Insert: {
+          birth_day?: number | null;
+          birth_month?: number | null;
           created_at?: string;
           email?: string | null;
           full_name?: string | null;
@@ -157,6 +161,8 @@ export type Database = {
           totem?: string | null;
         };
         Update: {
+          birth_day?: number | null;
+          birth_month?: number | null;
           created_at?: string;
           email?: string | null;
           full_name?: string | null;
@@ -270,6 +276,17 @@ export type Database = {
       };
     };
     Functions: {
+      upcoming_birthdays: {
+        Args: { _days?: number };
+        Returns: {
+          user_id: string;
+          display_name: string;
+          patrol_name: string | null;
+          birth_day: number;
+          birth_month: number;
+          days_until: number;
+        }[];
+      };
       admin_set_password: {
         Args: { _user_id: string; _password: string };
         Returns: undefined;

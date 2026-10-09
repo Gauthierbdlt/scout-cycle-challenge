@@ -16,4 +16,5 @@ psql -d test_alezan -f supabase/tests/test_securite_acces.sql   # doit finir par
 psql -d test_alezan -f supabase/tests/test_pre_lancement.sql    # doit finir par "TOUS LES TESTS PRÉ-LANCEMENT SONT PASSÉS"
 psql -d test_alezan -f supabase/tests/test_peloton.sql         # doit finir par "TOUS LES TESTS PELOTON SONT PASSÉS"
 psql -d test_alezan -f supabase/tests/test_scout_sportif_mois.sql # doit finir par "TOUS LES TESTS SCOUT SPORTIF DU MOIS SONT PASSÉS"
+psql -d test_alezan -f supabase/tests/test_anniversaires.sql    # doit finir par "TOUS LES TESTS ANNIVERSAIRES SONT PASSÉS"
 ```

@@ -20,6 +20,7 @@
 - Activity status is set by the `set_activity_status` DB trigger (Strava link → approved, screenshot → pending; only admins may change it). Why: users can't self-approve.
 - `profiles.is_admin` mirrors `user_roles` (trigger) and cannot be changed by non-admins; policies use `has_role` only.
 - « Peloton » ranking (group rides): `group_rides` + `group_ride_members` (members-only); each participant links their OWN activity via `activities.group_ride_id`. The `check_activity_group` trigger drops the link unless the author is a member, same date and sport, one activity per group. Group size = approved linked activities; points computed client-side in `src/lib/peloton.ts`. Why: nobody earns points from someone else's unproven ride.
+- Birthdays: optional `profiles.birth_day` + `birth_month` only (never the year — scouts are minors). Not in `profiles_public`; members read them only through the `upcoming_birthdays(_days)` RPC (authenticated only, today → +7 days, Europe/Brussels).
 - Storage `proofs`: files are named `<user_id>_<timestamp>.<ext>` or `proposed_<user_id>_…`; users manage only their own prefix, admins all.
 - DB changes go in `supabase/migrations/` and are tested locally with `supabase/tests/` before being applied.
 - Initial admin is granted by email in the `handle_new_user` trigger; further admins via `set_admin_by_email` RPC.
