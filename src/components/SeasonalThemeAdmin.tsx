@@ -64,7 +64,7 @@ function Segmented<T extends string>({
   disabled?: boolean;
 }) {
   return (
-    <div className="grid gap-2 sm:grid-cols-2">
+    <div className="grid grid-cols-2 gap-2">
       {options.map((o) => (
         <button
           key={o.value}
@@ -80,7 +80,7 @@ function Segmented<T extends string>({
           )}
         >
           <div className="text-sm font-bold text-foreground">{o.label}</div>
-          <div className="text-xs text-muted-foreground">{o.hint}</div>
+          <div className="text-[11px] leading-snug text-muted-foreground sm:text-xs">{o.hint}</div>
         </button>
       ))}
     </div>
@@ -192,7 +192,7 @@ export function SeasonalThemeAdmin() {
         </div>
       )}
 
-      <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
+      <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm sm:p-6">
         <div className="flex items-center gap-2 border-b pb-4">
           <Palette className="h-5 w-5 text-primary" />
           <div>
@@ -258,7 +258,7 @@ export function SeasonalThemeAdmin() {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3">
           {SEASONAL_THEMES.map((t) => {
             const isSite = t.id === siteTheme;
             const isPreview = preview === t.id;
@@ -266,12 +266,12 @@ export function SeasonalThemeAdmin() {
               <div
                 key={t.id}
                 className={cn(
-                  "relative flex flex-col rounded-xl border-2 bg-background p-4",
+                  "relative flex flex-col rounded-xl border-2 bg-background p-3 sm:p-4",
                   isSite ? "border-primary shadow-md" : "border-border",
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-3xl leading-none">{t.emoji}</span>
+                  <span className="text-2xl leading-none sm:text-3xl">{t.emoji}</span>
                   {isSite && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
                       <Check className="h-3 w-3" /> En ligne
@@ -279,12 +279,14 @@ export function SeasonalThemeAdmin() {
                   )}
                 </div>
                 <div className="mt-2 font-display text-sm font-bold text-foreground">{t.label}</div>
-                <p className="mt-0.5 text-xs text-muted-foreground">{t.description}</p>
-                <p className="mt-1 text-[11px] text-muted-foreground">
+                <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">
+                  {t.description}
+                </p>
+                <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
                   <CalendarClock className="mr-1 inline h-3 w-3" />
                   {t.period}
                 </p>
-                <div className="mt-3 flex gap-1.5">
+                <div className="mt-3 hidden gap-1.5 sm:flex">
                   {t.swatch.map((c) => (
                     <span
                       key={c}
@@ -293,7 +295,7 @@ export function SeasonalThemeAdmin() {
                     />
                   ))}
                 </div>
-                <div className="mt-3 flex gap-2">
+                <div className="mt-auto flex gap-2 pt-3">
                   <Button
                     size="sm"
                     className="flex-1"
@@ -323,7 +325,7 @@ export function SeasonalThemeAdmin() {
         )}
       </div>
 
-      <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm">
+      <div className="rounded-2xl border border-border/80 bg-card p-4 shadow-sm sm:p-6">
         <div className="flex items-center gap-2 border-b pb-4">
           <ImagePlus className="h-5 w-5 text-primary" />
           <div>
@@ -342,13 +344,13 @@ export function SeasonalThemeAdmin() {
           className="hidden"
           onChange={onFile}
         />
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-5 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3">
           {SEASONAL_THEMES.map((t) => {
             const url = settings.backgrounds[t.id];
             const busy = uploading === t.id;
             return (
               <div key={t.id} className="overflow-hidden rounded-xl border bg-background">
-                <div className="relative h-28 bg-muted">
+                <div className="relative h-20 bg-muted sm:h-28">
                   {url ? (
                     <>
                       <img src={url} alt="" className="h-full w-full object-cover opacity-70" />
@@ -379,7 +381,7 @@ export function SeasonalThemeAdmin() {
                     ) : url ? (
                       "Remplacer"
                     ) : (
-                      "Envoyer une photo"
+                      "Envoyer"
                     )}
                   </Button>
                   {url && (

@@ -49,6 +49,8 @@ import { CATEGORY_LABELS, type PatrolCategory, TROOP_STAFF_PATROL_NAME } from "@
 import { SeasonalThemeAdmin } from "@/components/SeasonalThemeAdmin";
 import { ScoutSportifAdmin, type SportifBadge } from "@/components/ScoutSportifAdmin";
 
+const TAB_TRIGGER = "shrink-0 rounded-lg px-3 py-2 text-xs font-bold gap-1.5 md:py-1";
+
 export const Route = createFileRoute("/_authenticated/admin")({
   ssr: false,
   head: () => ({
@@ -351,17 +353,17 @@ function Admin() {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="mx-auto max-w-6xl px-4 py-8 md:py-12 space-y-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <main className="mx-auto max-w-6xl px-4 py-5 md:py-12 space-y-5 md:space-y-8">
+        <div className="flex items-start justify-between gap-3 sm:items-center">
           <div>
             <div className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
               <Shield className="h-3.5 w-3.5" />
               <span>Panneau d'Administration</span>
             </div>
-            <h1 className="mt-2 font-display text-3xl font-black text-foreground">
+            <h1 className="mt-2 font-display text-xl font-black text-foreground sm:text-3xl">
               Gestion de l'ALEZAN 42
             </h1>
-            <p className="text-xs text-muted-foreground">
+            <p className="hidden text-xs text-muted-foreground sm:block">
               Valide les kilomètres, configure les badges de la semaine et organise les patrouilles
             </p>
           </div>
@@ -369,35 +371,38 @@ function Admin() {
           <Button
             onClick={() => setExportModalOpen(true)}
             className="gap-2 font-bold bg-primary text-primary-foreground shadow-md hover:bg-primary/90 shrink-0"
+            aria-label="Exporter en PDF"
           >
             <FileText className="h-4 w-4" />
-            Exporter en PDF
+            <span className="hidden sm:inline">Exporter en PDF</span>
+            <span className="sm:hidden">PDF</span>
           </Button>
         </div>
 
-        <Tabs defaultValue="validations" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 rounded-xl p-1 bg-muted">
-            <TabsTrigger value="validations" className="rounded-lg text-xs font-bold gap-1.5">
+        <Tabs defaultValue="validations" className="space-y-5 md:space-y-6">
+          {/* Mobile : une seule ligne qui défile, collée sous l'en-tête ; ordinateur : 6 colonnes */}
+          <TabsList className="sticky top-[58px] z-30 -mx-4 flex h-auto w-[calc(100%+2rem)] justify-start gap-1 overflow-x-auto rounded-none border-b bg-muted/95 p-1.5 backdrop-blur [scrollbar-width:none] md:static md:mx-0 md:grid md:w-full md:grid-cols-6 md:rounded-xl md:border-0 md:p-1 [&::-webkit-scrollbar]:hidden">
+            <TabsTrigger value="validations" className={TAB_TRIGGER}>
               <Check className="h-4 w-4" />
               Sorties ({pending.length})
             </TabsTrigger>
-            <TabsTrigger value="badges" className="rounded-lg text-xs font-bold gap-1.5">
+            <TabsTrigger value="badges" className={TAB_TRIGGER}>
               <Award className="h-4 w-4" />
               Scout sportif ({weeklyBadges.filter((b) => b.week_start).length})
             </TabsTrigger>
-            <TabsTrigger value="countdown" className="rounded-lg text-xs font-bold gap-1.5">
+            <TabsTrigger value="countdown" className={TAB_TRIGGER}>
               <Clock className="h-4 w-4" />
               Comptes à rebours
             </TabsTrigger>
-            <TabsTrigger value="patrols" className="rounded-lg text-xs font-bold gap-1.5">
+            <TabsTrigger value="patrols" className={TAB_TRIGGER}>
               <Crown className="h-4 w-4" />
               Patrouilles ({patrols.length})
             </TabsTrigger>
-            <TabsTrigger value="scouts" className="rounded-lg text-xs font-bold gap-1.5">
+            <TabsTrigger value="scouts" className={TAB_TRIGGER}>
               <Users className="h-4 w-4" />
               Membres
             </TabsTrigger>
-            <TabsTrigger value="fetes" className="rounded-lg text-xs font-bold gap-1.5">
+            <TabsTrigger value="fetes" className={TAB_TRIGGER}>
               <Palette className="h-4 w-4" />
               Fêtes
             </TabsTrigger>
@@ -467,7 +472,7 @@ function Admin() {
                             {cleanActivityNote(act.note) || "Sortie"}
                           </p>
                           {act.proof_path && (
-                            <div className="mt-2">
+                            <div className="mt-2 hidden sm:block">
                               <a
                                 href={act.proof_path}
                                 target="_blank"
@@ -479,15 +484,43 @@ function Admin() {
                               </a>
                             </div>
                           )}
+                          {act.strava_link && (
+                            <a
+                              href={act.strava_link}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mt-2 inline-flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline"
+                            >
+                              Ouvrir sur Strava
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          )}
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 self-end sm:self-center">
+                      {act.proof_path && (
+                        <a
+                          href={act.proof_path}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block overflow-hidden rounded-xl border sm:hidden"
+                          aria-label="Agrandir la photo de preuve"
+                        >
+                          <img
+                            src={act.proof_path}
+                            alt="Photo de preuve"
+                            loading="lazy"
+                            className="max-h-44 w-full bg-muted object-contain"
+                          />
+                        </a>
+                      )}
+
+                      <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:self-center">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => rejectAct(act)}
-                          className="gap-1 text-destructive hover:bg-destructive/10 border-destructive/30"
+                          className="h-11 gap-1 text-destructive hover:bg-destructive/10 border-destructive/30 sm:h-8"
                         >
                           <X className="h-4 w-4" />
                           Refuser
@@ -495,7 +528,7 @@ function Admin() {
                         <Button
                           size="sm"
                           onClick={() => approveAct(act)}
-                          className="gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                          className="h-11 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold sm:h-8"
                         >
                           <Check className="h-4 w-4" />
                           Valider les km
