@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { SPORTIF_TITLE, displayNameOf, weekLabel, type SportifProfile } from "@/lib/scoutSportif";
+import { SPORTIF_TITLE, displayNameOf, monthLabel, type SportifProfile } from "@/lib/scoutSportif";
 
 type Row = {
   id: string;
@@ -14,7 +14,7 @@ type Row = {
 
 type Winner = Row & { name: string; patrol: string };
 
-/** Carte publique : derniers « scouts sportifs de la semaine » et historique. */
+/** Carte publique : derniers « scouts sportifs du mois » et historique. */
 export function ScoutSportifCard() {
   const [showAll, setShowAll] = useState(false);
 
@@ -48,9 +48,9 @@ export function ScoutSportifCard() {
 
   if (winners.length === 0) return null;
 
-  const latestWeek = winners[0]?.week_start;
-  const latest = winners.filter((w) => w.week_start === latestWeek);
-  const history = winners.filter((w) => w.week_start !== latestWeek);
+  const latestMonth = winners[0]?.week_start;
+  const latest = winners.filter((w) => w.week_start === latestMonth);
+  const history = winners.filter((w) => w.week_start !== latestMonth);
   const shownHistory = showAll ? history : history.slice(0, 4);
 
   return (
@@ -63,8 +63,10 @@ export function ScoutSportifCard() {
           <Award className="h-5 w-5 text-amber-500" />
           {SPORTIF_TITLE}
         </h2>
-        {latestWeek && (
-          <span className="text-xs text-muted-foreground">Semaine {weekLabel(latestWeek)}</span>
+        {latestMonth && (
+          <span className="text-xs capitalize text-muted-foreground">
+            {monthLabel(latestMonth)}
+          </span>
         )}
       </div>
 
@@ -109,7 +111,7 @@ export function ScoutSportifCard() {
                   <span className="font-semibold text-foreground">{w.name}</span>
                   {w.patrol ? ` (${w.patrol})` : ""}
                 </span>
-                <span className="text-xs">Semaine {weekLabel(w.week_start)}</span>
+                <span className="text-xs capitalize">{monthLabel(w.week_start)}</span>
               </li>
             ))}
           </ul>

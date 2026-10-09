@@ -28,7 +28,7 @@ import { RecentActivityFeed } from "@/components/RecentActivityFeed";
 import { CollectiveRouteMap } from "@/components/CollectiveRouteMap";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { weekRange, useAuth } from "@/lib/useAuth";
+import { weekRange, monthRange, useAuth } from "@/lib/useAuth";
 import { db, type Patrol, getActivitySport, type ActivitySport, getPatrolEmblem } from "@/lib/database";
 import { cn } from "@/lib/utils";
 import {
@@ -76,7 +76,15 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Period = "week" | "last" | "all";
+type Period = "week" | "last" | "month" | "lastMonth" | "all";
+
+const PERIOD_LABELS: Record<Period, string> = {
+  week: "Cette semaine",
+  last: "Semaine passée",
+  month: "Ce mois",
+  lastMonth: "Mois passé",
+  all: "Depuis le début",
+};
 type GenderCat = "all" | "homme" | "femme";
 type ScoutYearFilter = "all" | "1" | "2" | "3" | "4" | "chef";
 type SportMode = "velo" | "course" | "all";
@@ -127,7 +135,16 @@ function Index() {
   const [scoutSearch, setScoutSearch] = useState("");
   const [pendingKm, setPendingKm] = useState(0);
 
-  const range = period === "week" ? weekRange(0) : period === "last" ? weekRange(-1) : null;
+  const range =
+    period === "week"
+      ? weekRange(0)
+      : period === "last"
+        ? weekRange(-1)
+        : period === "month"
+          ? monthRange(0)
+          : period === "lastMonth"
+            ? monthRange(-1)
+            : null;
 
   const { data: leaderboardData = [], isLoading: isLeaderboardLoading } = useQuery<
     LeaderboardItem[]
@@ -669,7 +686,11 @@ function Index() {
                 ? "cette semaine en cours"
                 : period === "last"
                   ? "sur la semaine passée"
-                  : "cumul depuis le lancement"}
+                  : period === "month"
+                    ? "ce mois-ci"
+                    : period === "lastMonth"
+                      ? "sur le mois passé"
+                      : "cumul depuis le lancement"}
             </p>
           </div>
 
@@ -748,15 +769,11 @@ function Index() {
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mr-1">
                 Période :
               </span>
-              <FilterPill active={period === "week"} onClick={() => setPeriod("week")}>
-                Cette semaine
-              </FilterPill>
-              <FilterPill active={period === "last"} onClick={() => setPeriod("last")}>
-                Semaine passée
-              </FilterPill>
-              <FilterPill active={period === "all"} onClick={() => setPeriod("all")}>
-                Depuis le début
-              </FilterPill>
+              {(Object.keys(PERIOD_LABELS) as Period[]).map((p) => (
+                <FilterPill key={p} active={period === p} onClick={() => setPeriod(p)}>
+                  {PERIOD_LABELS[p]}
+                </FilterPill>
+              ))}
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
@@ -803,18 +820,9 @@ function Index() {
         </div>
 
         {/* Maillots : jaune (km) et à pois (D+) par catégorie, selon la période et le sport */}
-        <JerseysPanel
-          jerseys={jerseys}
-          periodLabel={
-            period === "week"
-              ? "Cette semaine"
-              : period === "last"
-                ? "Semaine passée"
-                : "Depuis le début"
-          }
-        />
+        <JerseysPanel jerseys={jerseys} periodLabel={PERIOD_LABELS[period]} />
 
-        {/* Scout sportif de la semaine (affiché dès qu'un premier lauréat est désigné) */}
+        {/* Scout sportif du mois (affiché dès qu'un premier lauréat est désigné) */}
         <ScoutSportifCard />
 
         {/* View Switcher: Patrouilles vs Individuel vs Tendances Graphique */}

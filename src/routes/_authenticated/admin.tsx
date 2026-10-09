@@ -502,7 +502,7 @@ function Admin() {
             )}
           </TabsContent>
 
-          {/* Tab 2: Scout sportif de la semaine */}
+          {/* Tab 2: Scout sportif du mois */}
           <TabsContent value="badges" className="space-y-6">
             <ScoutSportifAdmin
               profiles={profiles}
