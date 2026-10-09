@@ -1,8 +1,8 @@
 /**
- * Scout sportif de la semaine.
+ * Scout sportif du mois.
  *
  * Règles :
- * - semaine du lundi au dimanche ;
+ * - mois civil (du 1er au dernier jour) ;
  * - un gagnant chez les Garçons et une gagnante chez les Filles ;
  * - le staff (membres des patrouilles staff) n'est pas éligible ;
  * - seules les sorties validées comptent, vélo et course confondus ;
@@ -11,7 +11,7 @@
  */
 import { isStaffPatrol } from "@/lib/categories";
 
-export const SPORTIF_TITLE = "Scout sportif de la semaine";
+export const SPORTIF_TITLE = "Scout sportif du mois";
 
 export type SportifCategory = "homme" | "femme";
 
@@ -51,41 +51,39 @@ export function displayNameOf(p: SportifProfile | undefined | null): string {
   return p.full_name || "Scout";
 }
 
-/** Date (AAAA-MM-JJ) du lundi de la semaine contenant `date`, en heure locale. */
-export function mondayOf(date: Date): string {
-  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const day = (d.getDay() + 6) % 7;
-  d.setDate(d.getDate() - day);
-  return toIsoDate(d);
-}
-
 export function toIsoDate(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-/** Lundi et dimanche (AAAA-MM-JJ) d'une semaine donnée par son lundi. */
-export function weekBounds(weekStart: string): { from: string; to: string } {
-  const [y, m, d] = weekStart.split("-").map(Number);
-  const sunday = new Date(y ?? 1970, (m ?? 1) - 1, (d ?? 1) + 6);
-  return { from: weekStart, to: toIsoDate(sunday) };
+/** Premier jour (AAAA-MM-01) du mois contenant `date`, en heure locale. */
+export function monthStartOf(date: Date): string {
+  return toIsoDate(new Date(date.getFullYear(), date.getMonth(), 1));
 }
 
-/** Libellé lisible d'une semaine : « du 29 sept. au 5 oct. 2026 ». */
-export function weekLabel(weekStart: string): string {
-  const { from, to } = weekBounds(weekStart);
-  const f = (s: string, withYear: boolean) => {
-    const [y, m, d] = s.split("-").map(Number);
-    return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1).toLocaleDateString("fr-BE", {
-      day: "numeric",
-      month: "short",
-      ...(withYear ? { year: "numeric" } : {}),
-    });
-  };
-  return `du ${f(from, false)} au ${f(to, true)}`;
+/** Mois décalé de `months` mois (monthStart = AAAA-MM-01). */
+export function shiftMonth(monthStart: string, months: number): string {
+  const [y, m] = monthStart.split("-").map(Number);
+  return toIsoDate(new Date(y ?? 1970, (m ?? 1) - 1 + months, 1));
+}
+
+/** Premier et dernier jour (AAAA-MM-JJ) d'un mois donné par son premier jour. */
+export function monthBounds(monthStart: string): { from: string; to: string } {
+  const [y, m] = monthStart.split("-").map(Number);
+  const last = new Date(y ?? 1970, m ?? 1, 0);
+  return { from: monthStart, to: toIsoDate(last) };
+}
+
+/** Libellé lisible d'un mois : « octobre 2026 ». */
+export function monthLabel(monthStart: string): string {
+  const [y, m] = monthStart.split("-").map(Number);
+  return new Date(y ?? 1970, (m ?? 1) - 1, 1).toLocaleDateString("fr-BE", {
+    month: "long",
+    year: "numeric",
+  });
 }
 
 /**
- * Candidats d'une semaine, triés par km décroissants, pour chaque catégorie.
+ * Candidats d'un mois, triés par km décroissants, pour chaque catégorie.
  * Exclut le staff, les personnes sans patrouille garçons/filles et celles déjà désignées.
  */
 export function computeSportifCandidates(input: {
@@ -93,9 +91,10 @@ export function computeSportifCandidates(input: {
   patrols: SportifPatrol[];
   activities: SportifActivity[];
   alreadyAwarded: Set<string>;
-  weekStart: string;
+  /** Premier jour du mois (colonne `week_start` en base). */
+  monthStart: string;
 }): Record<SportifCategory, SportifCandidate[]> {
-  const { from, to } = weekBounds(input.weekStart);
+  const { from, to } = monthBounds(input.monthStart);
   const patrolById = new Map(input.patrols.map((p) => [p.id, p]));
 
   const kmByUser = new Map<string, number>();

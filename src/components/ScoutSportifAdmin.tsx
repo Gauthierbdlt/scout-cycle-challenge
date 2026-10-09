@@ -8,10 +8,11 @@ import {
   SPORTIF_TITLE,
   computeSportifCandidates,
   displayNameOf,
-  mondayOf,
+  monthBounds,
+  monthLabel,
+  monthStartOf,
+  shiftMonth,
   toIsoDate,
-  weekBounds,
-  weekLabel,
   type SportifActivity,
   type SportifCategory,
   type SportifPatrol,
@@ -30,13 +31,8 @@ export interface SportifBadge {
 
 const CAT_LABEL: Record<SportifCategory, string> = { homme: "Garçons", femme: "Filles" };
 
-function shiftWeek(weekStart: string, weeks: number): string {
-  const [y, m, d] = weekStart.split("-").map(Number);
-  return toIsoDate(new Date(y ?? 1970, (m ?? 1) - 1, (d ?? 1) + weeks * 7));
-}
-
 /**
- * Désignation du scout sportif de la semaine (une fille, un garçon).
+ * Désignation du scout sportif du mois (une fille, un garçon).
  * Le site propose le meilleur de chaque catégorie, l'admin confirme.
  */
 export function ScoutSportifAdmin({
@@ -50,16 +46,16 @@ export function ScoutSportifAdmin({
   badges: SportifBadge[];
   onChanged: () => void;
 }) {
-  const currentMonday = mondayOf(new Date());
-  // Par défaut : la dernière semaine terminée
-  const [weekStart, setWeekStart] = useState(() => shiftWeek(currentMonday, -1));
+  const currentMonth = monthStartOf(new Date());
+  // Par défaut : le dernier mois terminé
+  const [monthStart, setMonthStart] = useState(() => shiftMonth(currentMonth, -1));
   const [activities, setActivities] = useState<SportifActivity[]>([]);
   const [loadingActs, setLoadingActs] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    const { from, to } = weekBounds(weekStart);
+    const { from, to } = monthBounds(monthStart);
     setLoadingActs(true);
     (async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,7 +72,7 @@ export function ScoutSportifAdmin({
     return () => {
       cancelled = true;
     };
-  }, [weekStart]);
+  }, [monthStart]);
 
   const sportifBadges = useMemo(
     () =>
@@ -86,8 +82,8 @@ export function ScoutSportifAdmin({
     [badges],
   );
   const profileById = useMemo(() => new Map(profiles.map((p) => [p.id, p])), [profiles]);
-  const awardedThisWeek = (cat: SportifCategory) =>
-    sportifBadges.find((b) => b.week_start === weekStart && b.category === cat);
+  const awardedThisMonth = (cat: SportifCategory) =>
+    sportifBadges.find((b) => b.week_start === monthStart && b.category === cat);
 
   const candidates = useMemo(
     () =>
@@ -96,17 +92,17 @@ export function ScoutSportifAdmin({
         patrols,
         activities,
         alreadyAwarded: new Set(sportifBadges.map((b) => b.user_id)),
-        weekStart,
+        monthStart,
       }),
-    [profiles, patrols, activities, sportifBadges, weekStart],
+    [profiles, patrols, activities, sportifBadges, monthStart],
   );
 
-  const isFutureOrCurrent = weekStart >= currentMonday;
+  const isFutureOrCurrent = monthStart >= currentMonth;
 
   const designate = async (cat: SportifCategory, userId: string, km: number, name: string) => {
     if (
       !confirm(
-        `Désigner ${name} « ${SPORTIF_TITLE} » (${CAT_LABEL[cat]}, semaine ${weekLabel(weekStart)}) ?\n\nUne personne ne peut être désignée qu'une seule fois.`,
+        `Désigner ${name} « ${SPORTIF_TITLE} » (${CAT_LABEL[cat]}, ${monthLabel(monthStart)}) ?\n\nUne personne ne peut être désignée qu'une seule fois.`,
       )
     ) {
       return;
@@ -117,7 +113,7 @@ export function ScoutSportifAdmin({
       user_id: userId,
       badge_title: SPORTIF_TITLE,
       awarded_date: toIsoDate(new Date()),
-      week_start: weekStart,
+      week_start: monthStart,
       category: cat,
       km,
     });
@@ -128,7 +124,7 @@ export function ScoutSportifAdmin({
         msg.includes("une_fois_par_personne")
           ? "Cette personne a déjà été désignée une fois."
           : msg.includes("un_par_semaine")
-            ? "Il y a déjà un gagnant dans cette catégorie pour cette semaine."
+            ? "Il y a déjà un gagnant dans cette catégorie pour ce mois."
             : "Erreur : " + msg,
       );
       return;
@@ -141,7 +137,7 @@ export function ScoutSportifAdmin({
     const name = displayNameOf(profileById.get(b.user_id));
     if (
       !confirm(
-        `Retirer le titre de ${name} (semaine ${weekLabel(b.week_start ?? "")}) ? Il ou elle redeviendra éligible.`,
+        `Retirer le titre de ${name} (${monthLabel(b.week_start ?? "")}) ? Il ou elle redeviendra éligible.`,
       )
     ) {
       return;
@@ -164,8 +160,8 @@ export function ScoutSportifAdmin({
           <div>
             <h2 className="font-display text-lg font-bold text-foreground">{SPORTIF_TITLE}</h2>
             <p className="text-xs text-muted-foreground">
-              Km validés (vélo + course), du lundi au dimanche. Staff exclu. Une seule fois par
-              personne.
+              Km validés (vélo + course), du 1er au dernier jour du mois. Staff exclu. Une seule
+              fois par personne.
             </p>
           </div>
         </div>
@@ -174,25 +170,27 @@ export function ScoutSportifAdmin({
           <Button
             size="icon"
             variant="outline"
-            aria-label="Semaine précédente"
-            onClick={() => setWeekStart((w) => shiftWeek(w, -1))}
+            aria-label="Mois précédent"
+            onClick={() => setMonthStart((m) => shiftMonth(m, -1))}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="text-center">
-            <div className="text-sm font-bold text-foreground">Semaine {weekLabel(weekStart)}</div>
+            <div className="text-sm font-bold capitalize text-foreground">
+              {monthLabel(monthStart)}
+            </div>
             {isFutureOrCurrent && (
               <div className="text-[11px] font-semibold text-amber-600">
-                Semaine en cours : attendre dimanche soir pour désigner
+                Mois en cours : attendre la fin du mois pour désigner
               </div>
             )}
           </div>
           <Button
             size="icon"
             variant="outline"
-            aria-label="Semaine suivante"
+            aria-label="Mois suivant"
             disabled={isFutureOrCurrent}
-            onClick={() => setWeekStart((w) => shiftWeek(w, 1))}
+            onClick={() => setMonthStart((m) => shiftMonth(m, 1))}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -200,7 +198,7 @@ export function ScoutSportifAdmin({
 
         <div className="mt-4 space-y-5">
           {(["homme", "femme"] as const).map((cat) => {
-            const winner = awardedThisWeek(cat);
+            const winner = awardedThisMonth(cat);
             const list = candidates[cat].slice(0, 3);
             return (
               <div key={cat}>
@@ -216,7 +214,7 @@ export function ScoutSportifAdmin({
                   <p className="text-xs text-muted-foreground">Chargement…</p>
                 ) : list.length === 0 ? (
                   <p className="text-xs text-muted-foreground">
-                    Aucun candidat éligible avec des km validés cette semaine.
+                    Aucun candidat éligible avec des km validés ce mois-ci.
                   </p>
                 ) : (
                   <div className="space-y-2">
@@ -289,8 +287,8 @@ export function ScoutSportifAdmin({
                       {Number(b.km ?? 0).toFixed(1)} km)
                     </span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    Semaine {weekLabel(b.week_start ?? "")}
+                  <p className="text-[11px] capitalize text-muted-foreground">
+                    {monthLabel(b.week_start ?? "")}
                   </p>
                 </div>
                 <Button
