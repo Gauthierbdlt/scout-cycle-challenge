@@ -153,8 +153,9 @@ Deno.serve(async (req) => {
   const pass = Deno.env.get("SMTP_PASS");
   if (!user || !pass)
     return json(
+      // 200 : l'admin voit le message dans la page (un code d'erreur le masquerait)
       { envoye: false, erreur: "Serveur d'e-mail non configuré (SMTP_USER / SMTP_PASS)" },
-      500,
+      200,
     );
   const port = Number(Deno.env.get("SMTP_PORT") ?? 465);
   try {
@@ -178,7 +179,7 @@ Deno.serve(async (req) => {
         envoye: false,
         erreur: "Envoi impossible : " + (e instanceof Error ? e.message : String(e)),
       },
-      502,
+      200,
     );
   }
   return json({ envoye: true, en_attente: n, destinataires: settings.emails.length, test });
