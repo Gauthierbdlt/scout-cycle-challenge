@@ -149,14 +149,20 @@ Deno.serve(async (req) => {
     .join("\n")}\n\nValider : ${SITE_URL}/admin`;
 
   // ---------- Envoi ----------
+  // En cas d'échec, on libère la réservation pour réessayer à la prochaine sortie
+  const release = async () => {
+    if (!test) await admin.from("alert_settings").update({ last_sent_at: null }).eq("id", true);
+  };
   const user = Deno.env.get("SMTP_USER");
   const pass = Deno.env.get("SMTP_PASS");
-  if (!user || !pass)
+  if (!user || !pass) {
+    await release();
     return json(
       // 200 : l'admin voit le message dans la page (un code d'erreur le masquerait)
       { envoye: false, erreur: "Serveur d'e-mail non configuré (SMTP_USER / SMTP_PASS)" },
       200,
     );
+  }
   const port = Number(Deno.env.get("SMTP_PORT") ?? 465);
   try {
     const transport = nodemailer.createTransport({
@@ -174,6 +180,7 @@ Deno.serve(async (req) => {
       html,
     });
   } catch (e) {
+    await release();
     return json(
       {
         envoye: false,
