@@ -49,6 +49,7 @@ import { ExportDialog } from "@/components/ExportDialog";
 import { CATEGORY_LABELS, type PatrolCategory, TROOP_STAFF_PATROL_NAME } from "@/lib/categories";
 import { SeasonalThemeAdmin } from "@/components/SeasonalThemeAdmin";
 import { CleanupAdmin } from "@/components/CleanupAdmin";
+import { PendingAlertAdmin } from "@/components/PendingAlertAdmin";
 import { ScoutSportifAdmin, type SportifBadge } from "@/components/ScoutSportifAdmin";
 
 const TAB_TRIGGER = "shrink-0 rounded-lg px-3 py-2 text-xs font-bold gap-1.5 md:py-1";
@@ -416,6 +417,7 @@ function Admin() {
 
           {/* Tab 1: Pending Validations */}
           <TabsContent value="validations" className="space-y-4">
+            <PendingAlertAdmin />
             <div className="flex items-center justify-between">
               <h2 className="font-display text-lg font-bold text-foreground">
                 Sorties en attente de validation ({pending.length})
